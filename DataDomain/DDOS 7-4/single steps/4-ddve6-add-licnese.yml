@@ -1,0 +1,36 @@
+---
+
+- hosts: localhost
+  gather_facts: false
+
+  vars:
+    DDVE_public_IP: 34.107.103.175
+    destination_port: 3009
+    Instance_id: 'Password1234!'
+    current_pasword: 'Password0815!'
+    S3_bucket_name: bucket_for_ddve_6
+    access_token: 'def681a832a93b1a431d39e8e39561025'
+
+  tasks:
+   
+    - name: add new DD license
+      uri:
+        validate_certs: false
+        status_code: 200
+        url: https://{{ DDVE_public_IP }}:{{ destination_port }}/{{ resource_path_1 }}
+        method: PUT
+        body_format: json
+        body: 
+          { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": { "license_content": "INCREMENT DDVE_CAPACITY EMCLM 1 permanent uncounted VENDOR_STRING=CAPACITY=8;CAPACITY_UNIT=TB;ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"003C AB99 61F5 CDB9 113A 85B6 C3F2 B500 EBA3 6936 044D E1E7 4696 0343 1C4B\""}}}
+        headers:
+            X-DD-AUTH-TOKEN: "{{ access_token }}"
+            Content-Type: 'application/json'
+        return_content: true
+      register: rest_response
+      vars:
+        resource_path_1: rest/v2.0/dd-systems/0/licenses
+
+    - name: DEBUG DD update license / GOT INFO
+      debug:
+        msg: "{{ rest_response }}"
+      when: rest_response.status ==  200

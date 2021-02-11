@@ -1,0 +1,20 @@
+---
+
+- hosts: localhost
+  gather_facts: false
+
+  vars:
+    DDVE_public_IP: 34.107.103.175
+
+  tasks:
+    - name: Wait until {{ DDVE_public_IP }}/api/doc is comming online
+      uri:
+        validate_certs: false
+        url: https://{{ DDVE_public_IP }}/api/doc
+        status_code: 200
+        method: GET
+      register: _result
+      until: _result.status == 200
+      retries: 720 # 720 * 5 seconds = 1hour (60*60/5)
+      delay: 5 # Every 5 seconds
+  

@@ -1,0 +1,35 @@
+---
+
+- hosts: localhost
+  gather_facts: false
+
+  vars:
+    DDVE_public_IP: 34.107.103.175
+    destination_port: 3009
+    Instance_id: 'Password1234!'
+
+
+  tasks:
+    - name: login access token
+      uri:
+        validate_certs: false
+        status_code: 201
+        url: https://{{ DDVE_public_IP }}:{{ destination_port }}/{{ resource_path }}
+        method: POST
+        body: 
+          username: sysadmin
+          password: "{{ Instance_id | string }}"
+        headers:
+          Content-Type: application/json
+        body_format: json
+        return_content: true
+      register: rest_post
+      vars:
+        resource_path: rest/v1.0/auth
+
+    - name: DEBUG / GOT INFO
+      debug:
+        msg: "{{ rest_post.x_dd_auth_token }}"
+      when: rest_post.status ==  201
+
+        

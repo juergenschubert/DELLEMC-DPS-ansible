@@ -1,0 +1,33 @@
+---
+
+- hosts: localhost
+  gather_facts: false
+
+  vars:
+    DDVE_public_IP: 34.107.103.175
+    destination_port: 3009
+    new_passphrase: 'Passsword123!'
+    access_token: 'def681a832a93b1a431d39e8e39561025'
+
+  tasks:
+   
+    - name: change timezone to Berlin
+      uri:
+        validate_certs: false
+        status_code: 200
+        url: https://{{ DDVE_public_IP }}:{{ destination_port }}/{{ resource_path_1 }}
+        method: PUT
+        body_format: json
+        body: {"operation": "set_timezone","timezone": "Europe/Berlin"}
+        headers:
+            X-DD-AUTH-TOKEN: "{{ access_token }}"
+            Content-Type: 'application/json'
+        return_content: true
+      register: rest_response
+      vars:
+        resource_path_1: rest/v3.0/dd-systems/0/settings
+
+    - name: DEBUG change timezone  / GOT INFO
+      debug:
+        msg: "{{ rest_response.json }}"
+      when: rest_response.status ==  200
