@@ -15,7 +15,7 @@
         status_code: 201
         url: https://{{ DDVE_public_IP }}:{{ destination_port }}/{{ resource_path }}
         method: POST
-        body: 
+        body:
           username: sysadmin
           password: "{{ Instance_id | string }}"
         headers:
@@ -30,5 +30,3 @@
       debug:
         msg: "{{ rest_post.x_dd_auth_token }}"
       when: rest_post.status ==  201
-
-        
