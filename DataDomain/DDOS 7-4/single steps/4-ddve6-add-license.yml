@@ -21,7 +21,7 @@
         method: PUT
         body_format: json
         body: 
-          { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": { "license_content": "INCREMENT DDVE_CAPACITY EMCLM 1 permanent uncounted VENDOR_STRING=CAPACITY=8;CAPACITY_UNIT=TB;ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"003C AB99 61F5 CDB9 113A 85B6 C3F2 B500 EBA3 6936 044D E1E7 4696 0343 1C4B\""}}}
+          { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": { "license_content": "Ireach out to me for the correct license format\""}}}
         headers:
             X-DD-AUTH-TOKEN: "{{ access_token }}"
             Content-Type: 'application/json'
