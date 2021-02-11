@@ -6,7 +6,7 @@
   vars:
     DDVE_public_IP: 34.107.103.175
     destination_port: 3009
-    Instance_id: 'Password1234!'
+    Instance_id: 'i-4711'
 
 
   tasks:
