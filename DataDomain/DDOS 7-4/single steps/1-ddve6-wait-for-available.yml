@@ -4,7 +4,7 @@
   gather_facts: false
 
   vars:
-    DDVE_public_IP: 34.107.103.175
+    DDVE_public_IP: 3.126.240.82
 
   tasks:
     - name: Wait until {{ DDVE_public_IP }}/api/doc is comming online

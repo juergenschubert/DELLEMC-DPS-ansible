@@ -4,10 +4,12 @@
   gather_facts: false
 
   vars:
-    DDVE_public_IP: 34.107.103.175
+    DDVE_public_IP: 3.126.240.82
     destination_port: 3009
+    Instance_id: 'i-0df218424de9442a1'
+    access_token: '651ea7afc1b0ad51bc8010a25265a721f'
     new_passphrase: 'Passsword123!'
-    access_token: 'def681a832a93b1a431d39e8e39561025'
+    S3_bucket_name: 'ddve6-bucket-terraform'
 
   tasks:
    
