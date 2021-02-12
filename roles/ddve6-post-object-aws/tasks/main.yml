@@ -88,7 +88,6 @@
     method: PUT
     body_format: json
     body:
-      { "operation":"set_pphrase","pphrase_request":{ "new_pphrase": "{{ New_Passphrase }}" } }
   #    { "operation":"set_pphrase","pphrase_request":{ "new_pphrase":"{{ New_Passphrase }}" } }
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
@@ -252,3 +251,25 @@
 #  debug:
 #    msg: "{{ rest_response12.json }}"
 #  when: rest_response12.status ==  200
+#13 Enable DDBOST
+- name: enable DDBoost
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_13 }}
+    method: PUT
+    body_format: json
+    body: 
+      { "operation":"enable" }
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response13
+  vars:
+    resource_path_13: rest/v1.0/dd-systems/0/protocols/ddboost
+#This is for debug reason and can be undcomented when needed
+- name: DEBUG DDBoost enable  / GOT INFO
+  debug:
+    msg: "{{ rest_response13.json }}"
+#  when: rest_response13.status ==  200

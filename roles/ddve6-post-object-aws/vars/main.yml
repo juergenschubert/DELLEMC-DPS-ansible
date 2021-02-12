@@ -1,7 +1,7 @@
 ---
-# vars file for ddve-post-object-aws
-DDVE_Public_IP: 3.124.190.62
-Instance_Id: 'i-047727b6ea649db9b'
+# vars file for ddve6-post-object-aws
+DDVE_Public_IP: 52.59.222.215
+Instance_Id: 'i-047f741036d782a15'
 S3_Bucket_Name: 'ddve6-bucket-terraform'
 New_Passphrase: 'Passsword123!'
 New_Password: 'Password123!'

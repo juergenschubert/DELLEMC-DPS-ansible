@@ -5,4 +5,4 @@
   gather_facts: false
 
   roles: 
-    - ddve-post-object-aws
+    - ddve6-post-object-aws

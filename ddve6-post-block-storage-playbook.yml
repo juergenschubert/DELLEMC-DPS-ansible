@@ -1,0 +1,9 @@
+---
+- 
+#this tend to configure a read deployed DDVE so a FileSystem is
+#enabled with block stroage.
+  hosts: localhost
+  gather_facts: false
+
+  roles: 
+    - ddve6-post-block-storage

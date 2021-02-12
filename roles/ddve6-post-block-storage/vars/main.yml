@@ -1,0 +1,7 @@
+---
+# vars file for ddve6-post-object-aws
+DDVE_Public_IP: 35.157.88.105
+Instance_Id: 'i-089c1381e7c48ef89'
+New_Passphrase: 'Passsword123!'
+New_Password: 'Password123!'
+Destination_Port: 3009
