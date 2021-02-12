@@ -1,0 +1,256 @@
+---
+# tasks file for ddve-post-object-aws
+#1 wait for availabillit of ReST endpoint
+- name: Wait until {{ DDVE_Public_IP }}/api/doc is comming online
+  uri:
+    validate_certs: false
+    url: https://{{ DDVE_Public_IP }}/api/doc
+    status_code: 200
+    method: GET
+  register: _result
+  until: _result.status == 200
+  retries: 10 # 10 *60 seconds =  10 Minutes wait
+  delay: 60 # Every 5 seconds
+#2 get the Bear token from the DD
+- name: login access token
+  uri:
+    validate_certs: false
+    status_code: 201
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_2 }}
+    method: POST
+    body: 
+      username: sysadmin
+      password: "{{ Instance_Id | string }}"
+    headers:
+      Content-Type: application/json
+    body_format: json
+    return_content: true
+  register: rest_post2
+  vars:
+    resource_path_2: rest/v1.0/auth
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG / GOT INFO
+#  debug:
+#    msg: "{{ rest_post2.x_dd_auth_token }}"
+#    msg: "{{ rest_post2 }}"
+#  when: rest_post2.status ==  201
+#3 Chenage default password
+- name: change from default login with new password {{ New_Password }}
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_3 }}
+    method: PUT
+    body_format: json
+    body: 
+      new_password: "{{ New_Password | string }}"
+      current_password: "{{ Instance_Id | string }}"
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response3
+  vars:
+    resource_path_3: rest/v1.0/dd-systems/0/users/sysadmin
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG DD default password change / GOT INFO
+#  debug:
+#    msg: "{{ rest_response3 }}"
+#  when: rest_response3.status ==  200
+#4 add DataDomain License
+- name: add new DD license
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_4 }}
+    method: PUT
+    body_format: json
+    body: 
+      { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": {
+			"license_content": "INCREMENT DDVE_CAPACITY EMCLM 1 permanent uncounted VENDOR_STRING=CAPACITY=16;CAPACITY_UNIT=TB;ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"0042 3FA3 414A B778 D3CC 8A58 AF08 3200 5818 E8C8 6D3A CED3 6D9F 3AC2 0177\"\n INCREMENT DDVE_DDBOOST EMCLM 1 permanent uncounted VENDOR_STRING=ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"0051 EA01 E042 7F5D 27C3 4AB2 022D FD00 6012 B9CF EC9B 26D9 F90D 67B1 C680\"\n INCREMENT DDVE_CLOUDTIER_CAPACITY EMCLM 1 permanent uncounted VENDOR_STRING=CAPACITY=32;CAPACITY_UNIT=TB;ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"00A4 5F4C D77A 71DC 0312 DAE8 BD3E A500 BCE0 FBC5 79EF F314 E79F 9197 FB21\""}}}
+#          { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": { "license_content": "Reach out to me for the correct license format\""}}}
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response4
+  vars:
+    resource_path_4: rest/v2.0/dd-systems/0/licenses
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG DD update license / GOT INFO
+#  debug:
+#    msg: "{{ rest_response4 }}"
+#  when: rest_response4.status ==  200
+#5 change or create a new passphrase
+- name: change passphrase after install
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_5 }}
+    method: PUT
+    body_format: json
+    body:
+      { "operation":"set_pphrase","pphrase_request":{ "new_pphrase": "{{ New_Passphrase }}" } }
+  #    { "operation":"set_pphrase","pphrase_request":{ "new_pphrase":"{{ New_Passphrase }}" } }
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response5
+  vars:
+    resource_path_5: rest/v3.0/dd-systems/0/systems
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG DD change passphrase / GOT INFO
+#  debug:
+#    msg: "{{ rest_response5 }}"
+#  when: rest_response5.status ==  200
+#6 List available disks for the DD active tier
+- name: list available disks
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_6 }}
+    method: GET
+    body_format: json
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response6
+  vars:
+    resource_path_6: api/v1/dd-systems/0/storage/disks?filter=status%3DUNKNOWN
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG list available disk / GOT INFO
+#  debug:
+#    msg: "{{ rest_response6.json }}"
+#  when: rest_response6.status ==  200
+#7 check the status of your object strore to see if you need to enable it
+- name: check object storage status on DD
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_7 }}
+    method: GET
+    body_format: json
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response7
+  vars:
+    resource_path_7: api/v1/dd-systems/0/file-systems/object-stores
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG check obejct store / GOT INFO
+#  debug:
+#    msg: "{{ rest_response7.json }}"
+#  when: rest_response7.status ==  200
+#8 enable object storage so you can add metadata disk
+- name: enable object storage on Amazon aws
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_8 }}
+    method: PUT
+    body_format: json
+    body: 
+      { "bucketType": "{{ S3_Bucket_Name | string }}", "acceptCertificate": true, "disks": [ dev3 ] }
+    headers:
+        X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+        Content-Type: 'application/json'
+    return_content: true
+  register: rest_response8
+  vars:
+    resource_path_8: api/v1/dd-systems/0/file-systems/object-stores/aws
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG add block storage / GOT INFO
+#  debug:
+#    msg: "{{ rest_response8.json }}"
+#  when: rest_response8.status ==  200
+#9 check object store to see if enabled
+- name: check object storage status
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_9 }}
+    method: GET
+    body_format: json
+    headers:
+        X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+        Content-Type: 'application/json'
+    return_content: true
+  register: rest_response9
+  vars:
+     resource_path_9: api/v1/dd-systems/0/file-systems/object-stores
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG check object store/ GOT INFO
+ # debug:
+#    msg: "{{ rest_response9.json }}"
+#  when: rest_response9.status ==  200
+#10 create the DD FileSystem
+- name: create DD filesystem
+  uri:
+    validate_certs: false
+    status_code: 200
+    timeout: 120
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_10 }}
+    method: PUT
+    body_format: json
+    body: 
+      { "operation": "create" }
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response10
+  vars:
+    resource_path_10: rest/v1.0/dd-systems/0/file-systems
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG update license / GOT INFO
+#  debug:
+#    msg: "{{ rest_response10.json }}"
+#  when: rest_response10.status ==  200
+#11 enable the created DD FileSystem
+- name: enable DD filesystem
+  uri:
+    validate_certs: false
+    status_code: 200
+    timeout: 120
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_11 }}
+    method: PUT
+    body_format: json
+    body: 
+      { "operation": "enable" }
+    headers:
+        X-DD-AUTH-TOKEN: "{{ access_token }}"
+        Content-Type: 'application/json'
+    return_content: true
+  register: rest_response11
+  vars:
+    resource_path_11: rest/v1.0/dd-systems/0/file-systems
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG update license / GOT INFO
+#  debug:
+#    msg: "{{ rest_response11.json }}"
+#  when: rest_response11.status ==  200
+#12 DD timezone to Berlin
+- name: timezone setting to Berlin
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_12 }}
+    method: PUT
+    body_format: json
+    body: 
+      { "operation": "set_timezone", "timezone": "Europe/Berlin" }
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response12
+  vars:
+    resource_path_12: rest/v3.0/dd-systems/0/settings
+#This is for debug reason and can be undcomented when needed
+#- name: DEBUG change timezone  / GOT INFO
+#  debug:
+#    msg: "{{ rest_response12.json }}"
+#  when: rest_response12.status ==  200

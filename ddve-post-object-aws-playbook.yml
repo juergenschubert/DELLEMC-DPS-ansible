@@ -1,0 +1,8 @@
+---
+- 
+
+  hosts: localhost
+  gather_facts: false
+
+  roles: 
+    - ddve-post-object-aws
