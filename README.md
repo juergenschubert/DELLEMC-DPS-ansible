@@ -24,7 +24,7 @@ create the DD filesystem.
 enable the DD filesystem. 
 enalbe DDBoost.  
 
-❯ ansible-playbook ddve6-post-block-storage-playbook.yml
+❯ ansible-playbook ddve6-post-block-storage-playbook.yml   
 What it will do:   
 Login to the DDVE.   
 Change the default password to "Password123!".     
