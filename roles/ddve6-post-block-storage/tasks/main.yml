@@ -66,8 +66,6 @@
     method: PUT
     body_format: json
     body: 
-      { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": {
-			"license_content": "INCREMENT DDVE_CAPACITY EMCLM 1 permanent uncounted VENDOR_STRING=CAPACITY=16;CAPACITY_UNIT=TB;ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"0042 3FA3 414A B778 D3CC 8A58 AF08 3200 5818 E8C8 6D3A CED3 6D9F 3AC2 0177\"\n INCREMENT DDVE_DDBOOST EMCLM 1 permanent uncounted VENDOR_STRING=ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"0051 EA01 E042 7F5D 27C3 4AB2 022D FD00 6012 B9CF EC9B 26D9 F90D 67B1 C680\"\n INCREMENT DDVE_CLOUDTIER_CAPACITY EMCLM 1 permanent uncounted VENDOR_STRING=CAPACITY=32;CAPACITY_UNIT=TB;ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"00A4 5F4C D77A 71DC 0312 DAE8 BD3E A500 BCE0 FBC5 79EF F314 E79F 9197 FB21\""}}}
 #          { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": { "license_content": "Reach out to me for the correct license format\""}}}
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
