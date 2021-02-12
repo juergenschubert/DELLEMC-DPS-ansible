@@ -7,6 +7,10 @@ Here you will find a yml playbook what you can walk thorugh to get a DDVE alread
 
  # yml files
  yml playbooks do show all available ansible roles and how to execute. Please make sure that you edit the need vars in the roles/vars directory  
- Starting a DDVE config in aws with object storeage 
+ Starting a DDVE config in aws with object storage 
  
 ❯ ansible-playbook ddve-post-object-aws-playbook.yml
+What it does was:  
+Login to the DDVE. 
+Change the default password to Password123!  
+add a new DD license
