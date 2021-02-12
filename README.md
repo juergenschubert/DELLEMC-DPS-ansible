@@ -16,6 +16,6 @@ Change the default password to "Password123!".
 add a new DD license.  
 Change/create new Passphrase to "Password123!"  
 Enable object storage with the dev you have added.  
-create the DD filesystem. 
+create the DD filesystem.   
 enable the DD filesystem. 
 
