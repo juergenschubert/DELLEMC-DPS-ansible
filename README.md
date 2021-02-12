@@ -10,7 +10,12 @@ Here you will find a yml playbook what you can walk thorugh to get a DDVE alread
  Starting a DDVE config in aws with object storage 
  
 ❯ ansible-playbook ddve-post-object-aws-playbook.yml
-What it does was:  
-Login to the DDVE. 
-Change the default password to Password123!  
-add a new DD license
+What it does was:   
+Login to the DDVE.   
+Change the default password to Password123!    
+add a new DD license.  
+Change/create new Passphrase to "Password123!"  
+Enable object storage with the dev you have added.  
+create the DD filesystem
+enable the DD filesystem
+
