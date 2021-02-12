@@ -66,7 +66,7 @@
     method: PUT
     body_format: json
     body: 
- #          { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": { "license_content": "Reach out to me for the correct license format\""}}}
+      { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": { "license_content": "Reach out to me for the correct license format\""}}}
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
       Content-Type: 'application/json'
@@ -189,7 +189,7 @@
   uri:
     validate_certs: false
     status_code: 200
-    timeout: 120
+    timeout: 240
     url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_10 }}
     method: PUT
     body_format: json
@@ -212,14 +212,14 @@
   uri:
     validate_certs: false
     status_code: 200
-    timeout: 120
+    timeout: 240
     url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_11 }}
     method: PUT
     body_format: json
     body: 
       { "operation": "enable" }
     headers:
-        X-DD-AUTH-TOKEN: "{{ access_token }}"
+        X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
         Content-Type: 'application/json'
     return_content: true
   register: rest_response11
