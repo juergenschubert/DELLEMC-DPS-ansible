@@ -88,7 +88,12 @@
     method: PUT
     body_format: json
     body:
-  #    { "operation":"set_pphrase","pphrase_request":{ "new_pphrase":"{{ New_Passphrase }}" } }
+      {
+        "operation": "set_pphrase",
+        "pphrase_request": {
+          "new_pphrase": "{{ New_Passphrase }}"
+         }
+      }
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
       Content-Type: 'application/json'
