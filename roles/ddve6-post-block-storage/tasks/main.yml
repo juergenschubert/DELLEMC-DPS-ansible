@@ -237,3 +237,25 @@
   debug:
     msg: "{{ rest_response13.json }}"
 #  when: rest_response13.status ==  200
+#14 Create Security User
+- name: Create Security User SecUser
+  uri:
+    validate_certs: false
+    status_code: 200
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_14 }}
+    method: POST
+    body_format: json
+    body: 
+      { "name": "SecUser", "password": "Passwword123!", "role": "admin" }
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response14
+  vars:
+    resource_path_14: rest/v1.0/dd-systems/0/users
+#This is for debug reason and can be undcomented when needed
+- name: DEBUG Security User creation / GOT INFO
+  debug:
+    msg: "{{ rest_response13.json }}"
+#  when: rest_response14.status ==  200
