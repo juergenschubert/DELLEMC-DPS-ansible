@@ -282,12 +282,12 @@
 - name: Create Security User SecUser
   uri:
     validate_certs: false
-    status_code: 200
+    status_code: 201
     url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_14 }}
     method: POST
     body_format: json
     body: 
-      { "name": "SecUser", "password": "Passwword123!", "role": "admin" }
+      { "name": "SecUser", "password": "Passwword123!", "role": "security" }
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
       Content-Type: 'application/json'
