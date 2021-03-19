@@ -159,13 +159,15 @@
     return_content: true
   register: rest_response_7
   tags:
-    - check
+    - addBlockStorage
   vars:
     resource_path_7: api/v1/dd-systems/0/file-systems/block-storages
 
 #- name: DEBUG add block storage / GOT INFO
 #  debug:
 #    msg: "{{ rest_response_7.json }}"
+#  tags:
+#    - addBlockStorage
 #  when: rest_response_7.status ==  200
 #10 create the DD FileSystem
 - name: create DD filesystem

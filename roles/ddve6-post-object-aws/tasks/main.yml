@@ -208,7 +208,7 @@
     return_content: true
   register: rest_response9
   tags:
-    - checkObjectstorage
+    - check
   vars:
      resource_path_9: api/v1/dd-systems/0/file-systems/object-stores
 #This is for debug reason and can be undcomented when needed
