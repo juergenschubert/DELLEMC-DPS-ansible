@@ -8,6 +8,8 @@
     status_code: 200
     method: GET
   register: _result
+  tags:
+    - waitUntilAvailable
   until: _result.status == 200
   retries: 10 # 10 *60 seconds =  10 Minutes wait
   delay: 60 # Every 5 seconds
@@ -26,6 +28,8 @@
     body_format: json
     return_content: true
   register: rest_post2
+  tags:
+    - getBearToken
   vars:
     resource_path_2: rest/v1.0/auth
 #This is for debug reason and can be undcomented when needed
