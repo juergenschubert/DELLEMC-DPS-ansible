@@ -50,12 +50,16 @@
       Content-Type: 'application/json'
     return_content: true
   register: rest_response3
+  tags:
+    - changeLoginPassword
   vars:
     resource_path_3: rest/v1.0/dd-systems/0/users/sysadmin
 #This is for debug reason and can be undcomented when needed
 #- name: DEBUG DD default password change / GOT INFO
 #  debug:
 #    msg: "{{ rest_response3 }}"
+#  tags:
+#    - changeLoginPassword
 #  when: rest_response3.status ==  200
 #4 add DataDomain License
 - name: add new DD license
@@ -66,18 +70,24 @@
     method: PUT
     body_format: json
     body: 
+      { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": {
+			"license_content": "INCREMENT DDVE_CAPACITY EMCLM 1 permanent uncounted VENDOR_STRING=CAPACITY=16;CAPACITY_UNIT=TB;ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"0042 3FA3 414A B778 D3CC 8A58 AF08 3200 5818 E8C8 6D3A CED3 6D9F 3AC2 0177\"\n INCREMENT DDVE_DDBOOST EMCLM 1 permanent uncounted VENDOR_STRING=ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"0051 EA01 E042 7F5D 27C3 4AB2 022D FD00 6012 B9CF EC9B 26D9 F90D 67B1 C680\"\n INCREMENT DDVE_CLOUDTIER_CAPACITY EMCLM 1 permanent uncounted VENDOR_STRING=CAPACITY=32;CAPACITY_UNIT=TB;ENV=INT-PERM; HOSTID=ANY ISSUER=EMC ISSUED=05-Aug-2015 NOTICE=\"ACTIVATED TO SiteID: \" SIGN=\"00A4 5F4C D77A 71DC 0312 DAE8 BD3E A500 BCE0 FBC5 79EF F314 E79F 9197 FB21\""}}}
 #          { "licenses_modify_2_0": { "operation": "elms_update_with_content", "elms_unserved_license": { "license_content": "Reach out to me for the correct license format\""}}}
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
       Content-Type: 'application/json'
     return_content: true
   register: rest_response4
+  tags:
+    - addLicense
   vars:
     resource_path_4: rest/v2.0/dd-systems/0/licenses
 #This is for debug reason and can be undcomented when needed
 #- name: DEBUG DD update license / GOT INFO
 #  debug:
 #    msg: "{{ rest_response4 }}"
+#  tags:
+#    - addLicense
 #  when: rest_response4.status ==  200
 #5 change or create a new passphrase
 - name: change passphrase after install
@@ -88,23 +98,23 @@
     method: PUT
     body_format: json
     body:
-      {
-        "operation": "set_pphrase",
-        "pphrase_request": {
-          "new_pphrase": "{{ New_Passphrase }}"
-         }
-      }
+      { "operation":"set_pphrase","pphrase_request":{ "new_pphrase": "{{ New_Passphrase }}" } }
+  #    { "operation":"set_pphrase","pphrase_request":{ "new_pphrase":"{{ New_Passphrase }}" } }
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
       Content-Type: 'application/json'
     return_content: true
   register: rest_response5
+  tags:
+    - changePassphrase  
   vars:
     resource_path_5: rest/v3.0/dd-systems/0/systems
 #This is for debug reason and can be undcomented when needed
 #- name: DEBUG DD change passphrase / GOT INFO
 #  debug:
 #    msg: "{{ rest_response5 }}"
+# tags:
+#    - changePassphrase
 #  when: rest_response5.status ==  200
 #6 List available disks for the DD active tier
 - name: list available disks
@@ -119,13 +129,17 @@
       Content-Type: 'application/json'
     return_content: true
   register: rest_response6
+  tags:
+    - check  
   vars:
     resource_path_6: api/v1/dd-systems/0/storage/disks?filter=status%3DUNKNOWN
 #This is for debug reason and can be undcomented when needed
-- name: DEBUG list available disk / GOT INFO
-  debug:
-    msg: "{{ rest_response6.json }}"
-  when: rest_response6.status ==  200
+#- name: DEBUG list available disk / GOT INFO
+#  debug:
+#    msg: "{{ rest_response6.json }}"
+#  tags:
+#    - check  
+#  when: rest_response6.status ==  200
 #7 enable block storage with disk
 - name: DD add block storage
   uri:
@@ -140,6 +154,8 @@
       Content-Type: 'application/json'
     return_content: true
   register: rest_response_7
+  tags:
+    - check
   vars:
     resource_path_7: api/v1/dd-systems/0/file-systems/block-storages
 
@@ -163,6 +179,8 @@
       Content-Type: 'application/json'
     return_content: true
   register: rest_response10
+  tags:
+    - createFS
   vars:
     resource_path_10: rest/v1.0/dd-systems/0/file-systems
 #This is for debug reason and can be undcomented when needed
@@ -186,12 +204,16 @@
         Content-Type: 'application/json'
     return_content: true
   register: rest_response11
+  tags:
+    - enableFS
   vars:
     resource_path_11: rest/v1.0/dd-systems/0/file-systems
 #This is for debug reason and can be undcomented when needed
 #- name: DEBUG update license / GOT INFO
 #  debug:
 #    msg: "{{ rest_response11.json }}"
+#  tags:
+#    - enableFS
 #  when: rest_response11.status ==  200
 #12 DD timezone to Berlin
 - name: timezone setting to Berlin
@@ -208,12 +230,16 @@
       Content-Type: 'application/json'
     return_content: true
   register: rest_response12
+  tags:
+    - setTimezone
   vars:
     resource_path_12: rest/v3.0/dd-systems/0/settings
 #This is for debug reason and can be undcomented when needed
 #- name: DEBUG change timezone  / GOT INFO
 #  debug:
 #    msg: "{{ rest_response12.json }}"
+#  tags:
+#    - setTimezone
 #  when: rest_response12.status ==  200
 #13 Enable DDBOST
 - name: enable DDBoost
@@ -230,12 +256,16 @@
       Content-Type: 'application/json'
     return_content: true
   register: rest_response13
+  tags:
+    - enableDDBoost
   vars:
     resource_path_13: rest/v1.0/dd-systems/0/protocols/ddboost
 #This is for debug reason and can be undcomented when needed
-- name: DEBUG DDBoost enable  / GOT INFO
-  debug:
-    msg: "{{ rest_response13.json }}"
+#- name: DEBUG DDBoost enable  / GOT INFO
+#  debug:
+#    msg: "{{ rest_response13.json }}"
+#  tags:
+#    - enableDDBoost
 #  when: rest_response13.status ==  200
 #14 Create Security User
 - name: Create Security User SecUser
@@ -246,16 +276,20 @@
     method: POST
     body_format: json
     body: 
-      { "name": "SecUser", "password": "Passwword123!", "role": "security" }
+      { "name": "SecUser", "password": "Passwword123!", "role": "admin" }
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
       Content-Type: 'application/json'
     return_content: true
   register: rest_response14
+  tags:
+    - createSecUser
   vars:
     resource_path_14: rest/v1.0/dd-systems/0/users
 #This is for debug reason and can be undcomented when needed
-- name: DEBUG Security User creation / GOT INFO
-  debug:
-    msg: "{{ rest_response13.json }}"
+#- name: DEBUG Security User creation / GOT INFO
+#  debug:
+#   msg: "{{ rest_response13.json }}"
+#  tags:
+#    - createSecUser
 #  when: rest_response14.status ==  200
