@@ -1,0 +1,11 @@
+---
+# vars file for ddve-post-object-aws
+DDVE_Public_IP: 52.59.222.215
+Instance_Id: 'i-047f741036d782a15'
+New_Passphrase: 'Passsword123!'
+New_Password: 'Password123!'
+Destination_Port: 3009
+Current_Password: 'Password123!'
+New_DD_User: 'DDNewUser'
+New_DD_User_Password: 'Password123!'
+New_DD_LSU_Name: "Juergens_LSU"
