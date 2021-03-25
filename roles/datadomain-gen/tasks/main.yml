@@ -40,11 +40,13 @@
   vars:
     resource_path_2: rest/v1.0/auth
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG / GOT INFO
-#  debug:
-#    msg: "{{ rest_post2.x_dd_auth_token }}"
-#    msg: "{{ rest_post2 }}"
-#  when: rest_post2.status ==  201
+- name: DEBUG / GOT INFO
+  debug:
+    msg: "{{ rest_post2.x_dd_auth_token }}"
+    msg: "{{ rest_post2 }}"
+  when: rest_post2.status ==  201
+  tags:
+    - debuggetBearToken
 #9 enable SMT is not enabled
 # DDOS SHell ---- smt enable
 #- name: enable SMT
