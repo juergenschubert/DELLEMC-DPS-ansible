@@ -1,3 +1,23 @@
+# ddve6-post-block-storage-playbook.yml
+####
+# syntax to be used
+# ansible-playbook ddve6-post-block-storage-playbook.yml \
+#     --extra-vars "DDVE_Public_IP= \
+#                   Instance_Id=  \
+#                   New_Passphrase=Passsword123! \
+#                   New_Password=Password123!"
+#
+# ansible-playbook ddve6-post-block-storage-playbook.yml \
+#     --extra-vars "DDVE_Public_IP=3.64.102.4 \
+#                   Instance_Id=i-03d0a951c79097dc4 \
+#                   New_Passphrase=Passsword123! \
+#                   New_Password=Password123!"
+#     --tags "waitUntilAvailable,getBearToken"
+#######
+# 
+# tags are: waitUntilAvailable,getBearToken,changeLoginPassword,check,addLicense,addBlockStorage,createFS,enableFS,setTimezone,enableDDBoost,createSecUser
+# debug tags: debuggetBearToken,debugchangeLoginPassword,debugcheck,debugaddLicense, /
+#             debugcreateFS,debugenableFS,debugsetTimezone,debugenableDDBoost,debugcreateSecUser
 ---
 - 
 #this tend to configure a read deployed DDVE so a FileSystem is

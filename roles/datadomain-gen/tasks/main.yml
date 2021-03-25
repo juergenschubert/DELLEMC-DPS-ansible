@@ -3,7 +3,6 @@
 # prepare your dd
 # smt enable
 #SMT enabled.
-#create a tenant-unit
 # sysadmin@ip-172-31-23-228# smt tenant-unit create tenant_unit_js
 # Tenant-unit "tenant_unit_js" created.
 #####################
@@ -46,7 +45,6 @@
 #    msg: "{{ rest_post2.x_dd_auth_token }}"
 #    msg: "{{ rest_post2 }}"
 #  when: rest_post2.status ==  201
-###############
 #9 enable SMT is not enabled
 # DDOS SHell ---- smt enable
 #- name: enable SMT
@@ -57,15 +55,7 @@
 #- name: DEBUG SMT enable / GOT INFO
 #  debug:
 #    msg: "{{ response_9 }}"
-#10 create a smt tenant-unit 
-#- name: create  smt tenant-unit 
-#  raw: smt tenant-unit create tenant_unit_js
-#  register: response_10
-#  tags:
-#    - createTenantUnit
-#- name: DEBUG createTenantUnit / GOT INFO
-#  debug:
-#    msg: "{{ response_10 }}"
+
 #3 create a new DD User
 - name: create a new user in dd {{ New_DD_User }}
   uri:
@@ -88,14 +78,14 @@
   vars:
     resource_path_3: rest/v1.0/dd-systems/0/users
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG DD default password change / GOT INFO
-#  debug:
-#    msg: "{{ rest_response3 }}"
-#  tags:
-#    - changeLoginPassword
+- name: DEBUG DD default password change / GOT INFO
+  debug:
+    msg: "{{ rest_response3 }}"
+  tags:
+    - debugcreatenewdduser
 #  when: rest_response3.status ==  200
-#4 add DataDomain LSU
-- name: add a new DD LSU {{ New_DD_LSU_Name }}
+#4 add Tenant
+- name: Create a new tenant {{ New_tenant_Name }}
   uri:
     validate_certs: false
     status_code: 201
@@ -103,7 +93,7 @@
     method: POST
     body_format: json
     body: 
-       { "name":"{{ New_DD_LSU_Name }}","user":"nonuser","tenant_unit":"tenant_unit_js" }
+       { "name":"{{ New_tenant_Name }}" }
  #      {"name":"storage-unit-js","user":"sysadmin","tenant_unit":"tenant_unit_js","quota_config":{"hard_limit":1048577,"soft_limit":1048576},"report_physical_size":123,"stream_limit_config":{"write_stream_soft_limit":123,"read_stream_soft_limit":123,"repl_stream_soft_limit":123,"combined_stream_soft_limit":123,"combined_stream_hard_limit":123}}
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
@@ -111,14 +101,68 @@
     return_content: true
   register: rest_response4
   tags:
+    - addtenant
+  vars:
+    resource_path_4: rest/v1.0/dd-systems/0/smt/tenants
+#This is for debug reason and can be undcomented when needed
+- name: DEBUG add tenant / GOT INFO
+  debug:
+    msg: "{{ rest_response4 }}"
+  tags:
+    - debugaddtenant
+#  when: rest_response4.status ==  200
+#5 New Tenant Unit
+- name: Create a new tenant unit {{ New_Tenant_Unit_Name }}
+  uri:
+    validate_certs: false
+    status_code: 201
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_5 }}
+    method: POST
+    body_format: json
+    body: 
+       { "name":"{{ New_Tenant_Unit_Name }}","tenant_name":"{{ New_tenant_Name }}" }
+ #      {"name":"storage-unit-js","user":"sysadmin","tenant_unit":"tenant_unit_js","quota_config":{"hard_limit":1048577,"soft_limit":1048576},"report_physical_size":123,"stream_limit_config":{"write_stream_soft_limit":123,"read_stream_soft_limit":123,"repl_stream_soft_limit":123,"combined_stream_soft_limit":123,"combined_stream_hard_limit":123}}
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response5
+  tags:
+    - addtenantunit
+  vars:
+    resource_path_5: rest/v1.0/dd-systems/0/smt/tenant-units
+#This is for debug reason and can be undcomented when needed
+- name: DEBUG add tenant / GOT INFO
+  debug:
+    msg: "{{ rest_response5 }}"
+  tags:
+    - debugaddtenantunit
+#  when: rest_response4.status ==  200
+#6 add DataDomain LSU
+- name: add a new DD LSU {{ New_DD_LSU_Name }} and assing to user {{LSU_User_Name}}
+  uri:
+    validate_certs: false
+    status_code: 201
+    url: https://{{ DDVE_Public_IP }}:{{ Destination_Port }}/{{ resource_path_6 }}
+    method: POST
+    body_format: json
+    body: 
+       { "name":"{{ New_DD_LSU_Name }}","user":"{{ LSU_User_Name }}" }
+ #      {"name":"storage-unit-js","user":"sysadmin","tenant_unit":"tenant_unit_js","quota_config":{"hard_limit":1048577,"soft_limit":1048576},"report_physical_size":123,"stream_limit_config":{"write_stream_soft_limit":123,"read_stream_soft_limit":123,"repl_stream_soft_limit":123,"combined_stream_soft_limit":123,"combined_stream_hard_limit":123}}
+    headers:
+      X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
+      Content-Type: 'application/json'
+    return_content: true
+  register: rest_response6
+  tags:
     - addLSU
   vars:
-    resource_path_4: rest/v1.0/dd-systems/0/protocols/ddboost/storage-units
+    resource_path_6: rest/v1.0/dd-systems/0/protocols/ddboost/storage-units
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG DD update license / GOT INFO
-#  debug:
-#    msg: "{{ rest_response4 }}"
-#  tags:
-#    - addLicense
+- name: DEBUG add LSU / GOT INFO
+  debug:
+    msg: "{{ rest_response6 }}"
+  tags:
+    - debugaddLSU
 #  when: rest_response4.status ==  200
-#5 change or create a new passphrase
+

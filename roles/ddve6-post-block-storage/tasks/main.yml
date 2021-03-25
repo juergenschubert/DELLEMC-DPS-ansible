@@ -33,10 +33,12 @@
   vars:
     resource_path_2: rest/v1.0/auth
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG / GOT INFO
-#  debug:
-#    msg: "{{ rest_post2.x_dd_auth_token }}"
-#    msg: "{{ rest_post2 }}"
+- name: DEBUG / GOT INFO
+  debug:
+    msg: "{{ rest_post2.x_dd_auth_token }}"
+    msg: "{{ rest_post2 }}"
+  tags:
+    - debuggetBearToken
 #  when: rest_post2.status ==  201
 #3 Chenage default password
 - name: change from default login with new password {{ New_Password }}
@@ -59,11 +61,13 @@
   vars:
     resource_path_3: rest/v1.0/dd-systems/0/users/sysadmin
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG DD default password change / GOT INFO
-#  debug:
-#    msg: "{{ rest_response3 }}"
-#  tags:
-#    - changeLoginPassword
+- name: DEBUG DD default password change / GOT INFO
+  debug:
+    msg: "{{ rest_response3 }}"
+  tags:
+    - changeLoginPassword
+  tags:
+    - debugchangeLoginPassword
 #  when: rest_response3.status ==  200
 #4 add DataDomain License
 - name: add new DD license
@@ -87,11 +91,11 @@
   vars:
     resource_path_4: rest/v2.0/dd-systems/0/licenses
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG DD update license / GOT INFO
-#  debug:
-#    msg: "{{ rest_response4 }}"
-#  tags:
-#    - addLicense
+- name: DEBUG DD update license / GOT INFO
+  debug:
+    msg: "{{ rest_response4 }}"
+  tags:
+    - debugaddLicense
 #  when: rest_response4.status ==  200
 #5 change or create a new passphrase
 - name: change passphrase after install
@@ -114,11 +118,11 @@
   vars:
     resource_path_5: rest/v3.0/dd-systems/0/systems
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG DD change passphrase / GOT INFO
-#  debug:
-#    msg: "{{ rest_response5 }}"
-# tags:
-#    - changePassphrase
+- name: DEBUG DD change passphrase / GOT INFO
+  debug:
+    msg: "{{ rest_response5 }}"
+ tags:
+    - debugchangePassphrase
 #  when: rest_response5.status ==  200
 #6 List available disks for the DD active tier
 - name: list available disks
@@ -138,11 +142,11 @@
   vars:
     resource_path_6: api/v1/dd-systems/0/storage/disks?filter=status%3DUNKNOWN
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG list available disk / GOT INFO
-#  debug:
-#    msg: "{{ rest_response6.json }}"
-#  tags:
-#    - check  
+- name: DEBUG list available disk / GOT INFO
+  debug:
+    msg: "{{ rest_response6.json }}"
+  tags:
+    - debugcheck  
 #  when: rest_response6.status ==  200
 #7 enable block storage with disk
 - name: DD add block storage
@@ -163,11 +167,11 @@
   vars:
     resource_path_7: api/v1/dd-systems/0/file-systems/block-storages
 
-#- name: DEBUG add block storage / GOT INFO
-#  debug:
-#    msg: "{{ rest_response_7.json }}"
-#  tags:
-#    - addBlockStorage
+- name: DEBUG add block storage / GOT INFO
+  debug:
+    msg: "{{ rest_response_7.json }}"
+  tags:
+    - debugaddBlockStorage
 #  when: rest_response_7.status ==  200
 #10 create the DD FileSystem
 - name: create DD filesystem
@@ -190,9 +194,11 @@
   vars:
     resource_path_10: rest/v1.0/dd-systems/0/file-systems
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG update license / GOT INFO
-#  debug:
-#    msg: "{{ rest_response10.json }}"
+- name: DEBUG update license / GOT INFO
+  debug:
+    msg: "{{ rest_response10.json }}"
+  tags:
+    - debugcreateFS
 #  when: rest_response10.status ==  200
 #11 enable the created DD FileSystem
 - name: enable DD filesystem
@@ -215,11 +221,11 @@
   vars:
     resource_path_11: rest/v1.0/dd-systems/0/file-systems
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG update license / GOT INFO
-#  debug:
-#    msg: "{{ rest_response11.json }}"
-#  tags:
-#    - enableFS
+- name: DEBUG update license / GOT INFO
+  debug:
+    msg: "{{ rest_response11.json }}"
+  tags:
+    - debugenableFS
 #  when: rest_response11.status ==  200
 #12 DD timezone to Berlin
 - name: timezone setting to Berlin
@@ -241,11 +247,11 @@
   vars:
     resource_path_12: rest/v3.0/dd-systems/0/settings
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG change timezone  / GOT INFO
-#  debug:
-#    msg: "{{ rest_response12.json }}"
-#  tags:
-#    - setTimezone
+- name: DEBUG change timezone  / GOT INFO
+  debug:
+    msg: "{{ rest_response12.json }}"
+  tags:
+    - debugsetTimezone
 #  when: rest_response12.status ==  200
 #13 Enable DDBOST
 - name: enable DDBoost
@@ -267,11 +273,11 @@
   vars:
     resource_path_13: rest/v1.0/dd-systems/0/protocols/ddboost
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG DDBoost enable  / GOT INFO
-#  debug:
-#    msg: "{{ rest_response13.json }}"
-#  tags:
-#    - enableDDBoost
+- name: DEBUG DDBoost enable  / GOT INFO
+  debug:
+    msg: "{{ rest_response13.json }}"
+  tags:
+    - debugenableDDBoost
 #  when: rest_response13.status ==  200
 #14 Create Security User
 - name: Create Security User SecUser
@@ -293,9 +299,9 @@
   vars:
     resource_path_14: rest/v1.0/dd-systems/0/users
 #This is for debug reason and can be undcomented when needed
-#- name: DEBUG Security User creation / GOT INFO
-#  debug:
-#   msg: "{{ rest_response13.json }}"
-#  tags:
-#    - createSecUser
+- name: DEBUG Security User creation / GOT INFO
+  debug:
+   msg: "{{ rest_response13.json }}"
+  tags:
+    - debugcreateSecUser
 #  when: rest_response14.status ==  200

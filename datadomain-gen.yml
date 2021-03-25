@@ -1,3 +1,37 @@
+# datadomain-gen.yml
+####
+# syntax to be used
+# ansible-playbook datadomain-gen.yml \
+#     --extra-vars "DDVE_Public_IP=34.90.51.126 \
+#                   Current_Password=Password123 \
+#                   New_DD_User=noneuser  \
+#                   New_User_Password=abc123 \
+#                   New_tenant_Name=tentant1 \
+#                   New_DD_LSU_Name=newLSU"
+#######
+# 
+# tags are: waitUntilAvailable,getBearToken,enableSMT,createnewdduser,addLSU
+# debug tags: debuggetBearToken,debugenableSMT,debugcreatenewdduser,debugaddLSU
+#    
+# ansible-playbook datadomain-gen.yml \
+#     --extra-vars "DDVE_Public_IP=34.90.51.126 \
+#                   Current_Password=Password123 \
+#                   New_DD_User=noneuser  \
+#                   New_User_Password=abc123 \
+#                   New_tenant_Name=tentant1 \
+#                   New_DD_LSU_Name=newLSU \
+#                   New_Tenant_Unit_Name=TenantUnit1" \
+#     --tags "waitUntilAvailable,getBearToken,addtenant,addtenantunit,addLSU"
+# Create a Storage Unti
+###make sure SMT is enabled !!!
+# ansible-playbook datadomain-gen.yml \
+#     --extra-vars "DDVE_Public_IP=34.90.51.126 \
+#                   Current_Password=Password123 \
+#                   New_DD_User=noneuser  \
+#                   New_User_Password=abc123 \
+#                   New_DD_LSU_Name=newLSU" \
+#     --tags "waitUntilAvailable,getBearToken,adduser,addLSU"
+####
 ---
 - 
 

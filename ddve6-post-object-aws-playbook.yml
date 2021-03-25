@@ -1,3 +1,25 @@
+# ddve6-post-object-aws-playbook.yml
+####
+# syntax to be used
+# ansible-playbook ddve6-post-object-aws-playbook.yml \
+#     --extra-vars "DDVE_Public_IP= \
+#                   Instance_Id=  \
+#                   S3_Bucket_Name=ddve6-bucket-terraform \
+#                   New_Passphrase=Passsword123! \
+#                   New_Password=Password123!"
+#
+# ansible-playbook ddve6-post-object-aws-playbook.yml \
+#     --extra-vars "DDVE_Public_IP=3.64.102.4 \
+#                   Instance_Id=i-03d0a951c79097dc4 \
+#                   S3_Bucket_Name=ddve6-bucket-terraform \
+#                   New_Passphrase=Passsword123! \
+#                   New_Password=Password123!"
+#     --tags "waitUntilAvailable,getBearToken"
+#######
+# 
+# tags are: waitUntilAvailable,getBearToken,changeLoginPassword,addLicense,changePassphrase,enableObjectstore,createFS,enableFS,setTimezone,enableDDBoost,createSecUser
+# debug tags: debugwaitUntilAvailable,debuggetBearToken,debugchangeLoginPassword,debugaddLicense,debugchangePassphrase,debugenableObjectstore, /
+#             debugcreateFS,debugenableFS,debugsetTimezone,debugenableDDBoost,debugcreateSecUser
 ---
 - 
 
