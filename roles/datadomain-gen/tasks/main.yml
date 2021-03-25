@@ -67,7 +67,7 @@
     body:
       name: "{{ New_DD_User | string }}"
       password: "{{ New_User_Password | string }}"
-      role: 'none'
+      role: "{{ New_User_Role }}"
     headers:
       X-DD-AUTH-TOKEN: "{{ rest_post2.x_dd_auth_token }}"
       Content-Type: 'application/json'
