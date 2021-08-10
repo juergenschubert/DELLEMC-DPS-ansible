@@ -1,22 +1,24 @@
 # DELLEMC-DPS-ansible 
 
-You can find more information on https://galaxy.ansible.com/docs/finding/content_types.html#ansible-roles about roles with ansible.
+You can find more information about Ansible and Ansible roles I am using here on https://galaxy.ansible.com/docs/finding/content_types.html#ansible-roles. A role enables the sharing and reuse of Ansible tasks. It contains Ansible playbook tasks, plus all the supporting files, variables, templates, and handlers needed to run the tasks. A role is a complete unit of automation that can be reused and shared.  
 
-Ansible can be installed on your laptop. Please refer to https://phoenixnap.com/kb/install-ansible-on-windows for windows 10 installation.
+# Install Ansible on Windows 10   
+Befpre we can start with Ansible we need to install Ansible frist. Ansible can be installed on your desktop/laptop. Please refer to https://phoenixnap.com/kb/install-ansible-on-windows for windows 10 installation.  
+# Install Ansible in Mac OSX
+Install Ansible on Mac OSX documentation can be found at https://hvops.com/articles/ansible-mac-osx/  
+  
+    
 
-Install Ansible on Mac OSX documentation can be found at https://hvops.com/articles/ansible-mac-osx/
-
-
-This is the place to find Ansible scripts/roles for diferent use cases like configuration.
+This is the place to find Ansible scripts/roles for different use cases like configuration.
 ## DataDomain
-
-Here you will find a yml playbook what you can walk thorugh to get a DDVE already deployed for Block Storage or Object Storage enabled so the filesystem is up and running. Object Storage is here for aws while block stroage can work on all DDVE and phyical DDs.
+After cloning you find several subdirectories.
+Here you will find a yml playbook that you can walk through to get a DDVE already deployed for Block Storage or Object Storage enabled so the filesystem is up and running. Object Storage is here for aws while block storage can work on all DDVE and physical DDs.
 ## role
 creation of ansibles roles for easier use. this was done with  ansible-galaxy init datadomain-gen  
 Directories underneath the roles directory are:  
 datadomain-gen
-Role for DDVE post deploy on aws with object storage -> ddve6-post-block-storage  
-Role for DDVE post deploy on block storage -> ddve6-post-object-aws
+Role for DDVE post-deploy on AWS with object storage -> ddve6-post-block-storage  
+Role for DDVE post-deploy on block storage -> ddve6-post-object-aws
 
  ## yml files
  yml playbooks do show all available ansible roles and how to execute. Please make sure that you edit the required vars in the roles/vars directory  
@@ -50,7 +52,7 @@ Encrypting content with Ansible Vault  https://docs.ansible.com/ansible/latest/u
 
 
 Encrypted Specific Variables in Ansible
-Ansible vault will prompt you for the password and later require you to confirm it. Next, type the string value that you want to encrypt. Finally, press ctrl + d. Thereafter, you can begin assigning the encrypted value in a playbook.
+Ansible vault will prompt you for the password and later require you to confirm it. Next, type the string value that you want to encrypt. Finally, press ctrl + d. Thereafter, you can begin assigning the encrypted value in a playbook.
 
 This can be achieved in a single line as shown below.  
 
