@@ -7,5 +7,14 @@ New_Password: 'Password123!'
 Destination_Port: 3009
 Current_Password: 'Password123!'
 New_DD_User: 'DDNewUser'
-New_DD_User_Password: 'Password123!'
+#New_DD_User_Password: 'Password123!'
+#encrypt the password so you cannot read it plain text !!!
+#ansible-vault encrypt_string 'Password123!' --name 'New_User_Password'
+New_User_Password: !vault |  
+          $ANSIBLE_VAULT;1.1;AES256  
+          32383234303863346236653732333035633162656365313764366265356464633831303432383262  
+          6532356666353164303532623831326333363135313332310a656261393564356437643366363433  
+          61656261333438383063346666383630323130646432316630346232643438616136386563623664  
+          6131386562643462650a383334303863323664393363626534336332613262393264623732393064  
+          6239 
 New_DD_LSU_Name: "Juergens_LSU"

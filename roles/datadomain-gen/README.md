@@ -1,7 +1,7 @@
 Role Name
 =========
 
-A brief description of the role goes here.
+A brief description of the role goes here. you can find more information on https://galaxy.ansible.com/docs/finding/content_types.html#ansible-roles about roles with ansible.
 
 Requirements
 ------------
