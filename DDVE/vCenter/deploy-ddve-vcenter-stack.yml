@@ -1,0 +1,230 @@
+---
+- name: "PowerProtect DataDomain deployment stack - Demo"
+  hosts: localhost
+  become: no
+  gather_facts: false
+  tasks:
+  - name: Include the variable file variables.yml
+    include_vars: variables.yml
+  - name: Check that the OVA exists
+    stat:
+      path: "{{ ova_binary }}"
+      get_checksum: no
+      get_md5: no
+    register: stat_result
+#  - name: debug ova exist
+#    debug:
+#      msg: return value {{ stat_result }}
+  - debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
+  - name: Fail early when OVA is missing
+    assert:
+      that: "stat_result.stat.exists == True" 
+      msg: "You must provide the vic OVA at {{ ova_binary }}"
+  - name: Deploy PowerProtect Data Domain
+    vmware_deploy_ovf:
+      hostname: "{{vcenter_host}}"
+      username: "{{vcenter_acct}}"
+      password: "{{vcenter_pwd}}"
+      validate_certs: no
+      name: "{{ddve_host}}"
+      datacenter: "{{vcenter_dc}}"
+      folder: /{{vcenter_dc}}/vm/Deploy
+      datastore: "{{vcenter_ds}}"
+      disk_provisioning: thin
+      networks: 
+        "VM Network 1": VM Network
+        "VM Network 2": VM Network
+      ova: "{{ova_binary}}"
+      allow_duplicates: no
+      fail_on_spec_warnings: no
+      wait: no
+      wait_for_ip_address: no
+      inject_ovf_env: yes
+      properties:
+        hostname: "{{ddve_host}}.vlab.local"
+        ipAddress: 192.168.1.90
+        netmask: 255.255.255.0
+        gateway: 192.168.1.1
+        dnsServer1: 192.168.1.1
+        dnsServer2: 192.168.1.12
+      power_on: yes
+    delegate_to: localhost
+ # ADD VDISK TO DDVE FOR ACTIVE TIER 
+  - name: "( {{ddve_host}}.vlab.local ): Adding 500 GiB disk for active tier."
+    vmware_guest_disk:
+      hostname: "{{vcenter_host}}"
+      username: "{{vcenter_acct}}"
+      password: "{{vcenter_pwd}}"
+      datacenter: "{{vcenter_dc}}"
+      name: "{{ddve_host}}"
+      disk:
+        - size_gb: 500
+          type: thin
+          state: present
+          datastore: "{{vcenter_ds}}"
+          disk_mode: "independent_persistent"
+          scsi_controller: 0
+          unit_number: 2
+      validate_certs: no
+    delegate_to: localhost
+    register: disk_facts
+# WAIT FOR HTTPS RESPONSE FROM POWERPROTECT DATA DOMAIN  
+  - name: "( {{ddve_host}}.vlab.local ): Waiting for HTTPS connectivity."
+    wait_for:
+      host: "{{ddve_host}}.vlab.local"
+      port: 443
+      state: started
+      delay: 1
+      sleep: 60
+      timeout: 1200
+    register: waitforddve
+
+# AUTHENTICATE TO DDVE REST API
+  - name: "( {{ddve_host}}.vlab.local ): Authenticate to PowerProtect DD REST API"
+    uri:
+      url: https://{{ddve_host}}.vlab.local:3009/rest/v1.0/auth
+      method: POST
+      force_basic_auth: no
+      validate_certs: no
+      return_content: yes
+      body_format: json
+      body: |
+        {
+          "username": "{{ddve_acct}}",
+          "password": "{{ddve_old_pwd}}"
+        }
+      status_code: 201
+    register: dd_token
+
+  - name: Result from get access token
+    debug:
+      var:  dd_token.x_dd_auth_token
+
+# ADD DEV3 DISK TO THE ACTIVE TIER
+  - name: "( {{ddve_fqdn}} ): Add dev3 to the active tier"
+    uri:
+      url: https://{{ddve_fqdn}}:3009/api/v1/dd-systems/0/file-systems/block-storages
+      method: PUT
+      headers:
+        X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
+        Content-Type: "application/json"
+      force_basic_auth: no
+      validate_certs: no
+      body_format: json
+      body: |
+        {
+          "disks": [
+            "dev3"
+          ]
+        }
+      return_content: yes
+      status_code: 200
+    register: disks
+
+# CREATE THE FILESYSTEM
+  - name: "( {{ddve_fqdn}} ): Create the filesystem"
+    uri:
+      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/file-systems
+      method: PUT
+      headers:
+        X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
+        Content-Type: "application/json"
+      force_basic_auth: no
+      validate_certs: no
+      body_format: json
+      body: |
+        {
+          "operation": "create",
+          "write_zeros": false
+        }
+      timeout: 600
+      return_content: yes
+      status_code: 200
+    register: create_filesys
+
+# ENABLE THE FILESYSTEM
+  - name: "( {{ddve_fqdn}} ): Enable the filesystem"
+    uri:
+      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/file-systems
+      method: PUT
+      headers:
+        X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
+        Content-Type: "application/json"
+      force_basic_auth: no
+      validate_certs: no
+      body_format: json
+      body: |
+        {
+          "operation": "enable"
+        }
+      timeout: 600
+      return_content: yes
+      status_code: 200
+    register: enable_filesys
+
+# ENABLE THE DDBOOST PROTOCOL
+  - name: "( {{ddve_fqdn}}): Enable the boost protocol"
+    uri:
+      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/protocols/ddboost
+      method: PUT
+      headers:
+        X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
+        Content-Type: "application/json"
+      force_basic_auth: no
+      validate_certs: no
+      body_format: json
+      body: |
+        {
+          "operation": "enable"
+        }
+      return_content: yes
+      status_code: 200
+    register: boost
+
+# SET THE SYSTEM PASSPHRASE
+  - name: "( {{ddve_fqdn}} ): Set the system passphrase"
+    uri:
+      url: https://{{ddve_fqdn}}:3009/rest/v3.0/dd-systems/0/systems
+      method: PUT
+      headers:
+        X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
+        Content-Type: "application/json"
+      force_basic_auth: no
+      validate_certs: no
+      body_format: json
+      body: |
+        {
+          "operation": "set_pphrase",
+          "pphrase_request": {
+            "new_pphrase": "{{common_pwd}}"
+          }
+        }
+      return_content: yes
+      status_code: 200
+    register: passphrase
+
+# UPDATE THE SYSADMIN PASSWORD
+  - name: "( {{ddve_fqdn}} ): Set the sysadmin password"
+    uri:
+      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/users/{{ddve_acct}}
+      method: PUT
+      headers:
+        X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
+        Content-Type: "application/json"
+      force_basic_auth: no
+      validate_certs: no
+      body_format: json
+      body: |
+        {
+          "current_password": "{{ddve_old_pwd}}",
+          "new_password": "{{common_pwd}}"
+        }
+      return_content: yes
+      status_code: 200
+    register: password
+  - debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
+
+
+
+
+
