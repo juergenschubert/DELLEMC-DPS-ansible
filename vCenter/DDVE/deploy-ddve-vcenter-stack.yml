@@ -8,7 +8,7 @@
     include_vars: variables.yml
   - name: Check that the OVA exists
     stat:
-      path: "{{ ova_binary }}"
+      path: "{{ ddve_ova_binary }}"
       get_checksum: no
       get_md5: no
     register: stat_result
@@ -19,7 +19,7 @@
   - name: Fail early when OVA is missing
     assert:
       that: "stat_result.stat.exists == True" 
-      msg: "You must provide the vic OVA at {{ ova_binary }}"
+      msg: "You must provide the vic OVA at {{ ddve_ova_binary }}"
   - name: Deploy PowerProtect Data Domain
     vmware_deploy_ovf:
       hostname: "{{vcenter_host}}"
@@ -34,7 +34,7 @@
       networks: 
         "VM Network 1": VM Network
         "VM Network 2": VM Network
-      ova: "{{ova_binary}}"
+      ova: "{{ddve_ova_binary}}"
       allow_duplicates: no
       fail_on_spec_warnings: no
       wait: no
