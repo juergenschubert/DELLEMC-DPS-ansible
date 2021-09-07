@@ -8,5 +8,12 @@ ddve_host: ddve-1
 ddve_fqdn: ddve-1.vlab.local
 ddve_acct: sysadmin
 ddve_old_pwd: changeme
+ddve_ip: 192.168.1.90
 common_pwd: Password123!
-ova_binary: /mnt/c/wsl/automation/ova/ddve-7.6.0.7-685767/ddve-7.6.0.7-685767.ova
+ddve_ova_binary: /mnt/c/wsl/automation/ova/ddve-7.6.0.7-685767/ddve-7.6.0.7-685767.ova
+vcenter_folder: vm/Deploy/
+ppdm_ova_binary: /mnt/c/wsl/automation/ova/dellemc-ppdm-sw-19.8.0-5.ova
+ppdm_host: ppdm1
+ppdm_fqdn: ppdm1.vlab.local
+ppdm_old_pwd: admin
+ppdm_ip: 192.168.1.51

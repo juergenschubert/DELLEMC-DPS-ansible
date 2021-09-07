@@ -19,7 +19,7 @@
   - name: Fail early when OVA is missing
     assert:
       that: "stat_result.stat.exists == True" 
-      msg: "You must provide the vic OVA at {{ ddve_ova_binary }}"
+      msg: "You must provide the OVA at {{ ddve_ova_binary }}"
   - name: Deploy PowerProtect Data Domain
     vmware_deploy_ovf:
       hostname: "{{vcenter_host}}"

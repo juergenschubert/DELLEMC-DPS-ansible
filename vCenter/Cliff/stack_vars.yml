@@ -1,0 +1,37 @@
+#VCENTER VARIABLES
+vcenter_acct: administrator@vsphere.local
+vcenter_pwd: Password123!
+vcenter_host: vc.vlab.local
+vcenter_dc: Datacenter
+vcenter_ds: nfs-datastore
+vcenter_folder: "/{{vcenter_dc}}/vm/Deploy/"
+vcenter_network: VM Network
+
+#POWERPROTECT DATAMANAGER VARIABLES
+ppdm_host: ppdm1
+ppdm_acct: admin
+ppdm_old_pwd: admin
+ppdm_ip: 192.168.1.51
+ppdm_netmask: 255.255.255.0
+ppdm_gateway: 192.168.1.1
+ppdm_dns: 192.168.1.1
+ppdm_ntp: 192.168.1.1
+ppdm_timezone: "US/Central - Central Standard Time"
+ppdm_ova: /mnt/c/wsl/automation/ova/dellemc-ppdm-sw-19.8.0-5.ova
+
+#POWERPROTECT DD VARIABLES
+ddve_host: ddve-1
+ddve_acct: sysadmin
+ddve_old_pwd: changeme
+ddve_ip: 192.168.1.90
+ddve_netmask: 255.255.255.0
+ddve_gateway: 192.168.1.1
+ddve_dns1: 192.168.1.1
+ddve_dns2: 192.168.1.1
+ddve_ova: /mnt/c/wsl/automation/ova/ddve-7.6.0.7-685767/ddve-7.6.0.7-685767.ova
+ddve_disk_size: 500
+ddve_disk_type: thin
+
+#MISC VARS
+common_pwd: Password123!
+ad_domain: vlab.local

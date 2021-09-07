@@ -11,9 +11,3 @@ ddve_old_pwd: changeme
 ddve_ip: 192.168.1.90
 common_pwd: Password123!
 ddve_ova_binary: /mnt/c/wsl/automation/ova/ddve-7.6.0.7-685767/ddve-7.6.0.7-685767.ova
-vcenter_folder: vm/Deploy/
-ppdm_ova_binary: /mnt/c/wsl/automation/ova/dellemc-ppdm-sw-19.8.0-5.ova
-ppdm_host: ppdm-1
-ppdm_fqdn: ppdm-1.vlab.local
-ppdm_old_pwd:
-ppdm_ip: 192.168.1.51
