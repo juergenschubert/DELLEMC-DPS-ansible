@@ -57,10 +57,10 @@
       inject_ovf_env: yes
       properties:
         vami.fqdn.brs: "{{ppdm_fqdn}}"
-        vami.ip0.brs: 192.168.3.107
-        vami.netmask0.brs: 255.255.252.0
-        vami.gateway.brs: 192.168.1.250
-        vami.DNS.brs: 192.168.1.11
+        vami.ip0.brs: 192.168.1.51
+        vami.netmask0.brs: 255.255.255.0
+        vami.gateway.brs: 192.168.1.1
+        vami.DNS.brs: 192.168.1.1
       power_on: yes
     delegate_to: localhost
 
