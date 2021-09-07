@@ -6,7 +6,7 @@
  
   vars:
   vars_files:
-    - vars/stack_vars.yml
+    - stack_vars.yml
 
   tasks:
 # DEPLOY THE POWER PROTECT OVA TO VCENTER
@@ -103,7 +103,7 @@
 # AUTHENTICATE TO DDVE REST API
   - name: "( {{ddve_host}}.{{ad_domain}} ): Authenticate to PowerProtect DD REST API"
     uri:
-      url: https://{{ddve_host}}:3009/rest/v1.0/auth
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/auth
       method: POST
       force_basic_auth: no
       validate_certs: no
@@ -124,7 +124,7 @@
 # ADD DEV3 DISK TO THE ACTIVE TIER
   - name: "( {{ddve_host}}.{{ad_domain}} ): Add dev3 to the active tier"
     uri:
-      url: https://{{ddve_host}}:3009/api/v1/dd-systems/0/file-systems/block-storages
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/api/v1/dd-systems/0/file-systems/block-storages
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -145,7 +145,7 @@
 # CREATE THE FILESYSTEM
   - name: "( {{ddve_host}}.{{ad_domain}} ): Create the filesystem"
     uri:
-      url: https://{{ddve_host}}:3009/rest/v1.0/dd-systems/0/file-systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/file-systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -166,7 +166,7 @@
 # ENABLE THE FILESYSTEM
   - name: "( {{ddve_host}}.{{ad_domain}} ): Enable the filesystem"
     uri:
-      url: https://{{ddve_host}}:3009/rest/v1.0/dd-systems/0/file-systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/file-systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -186,7 +186,7 @@
 # ENABLE THE DDBOOST PROTOCOL
   - name: "( {{ddve_host}}.{{ad_domain}} ): Enable the boost protocol"
     uri:
-      url: https://{{ddve_host}}:3009/rest/v1.0/dd-systems/0/protocols/ddboost
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/protocols/ddboost
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -205,7 +205,7 @@
 # SET THE SYSTEM PASSPHRASE
   - name: "( {{ddve_host}}.{{ad_domain}} ): Set the system passphrase"
     uri:
-      url: https://{{ddve_host}}:3009/rest/v3.0/dd-systems/0/systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v3.0/dd-systems/0/systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -227,7 +227,7 @@
 # UPDATE THE SYSADMIN PASSWORD
   - name: "( {{ddve_host}}.{{ad_domain}} ): Set the sysadmin password"
     uri:
-      url: https://{{ddve_host}}:3009/rest/v1.0/dd-systems/0/users/{{ddve_acct}}
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/users/{{ddve_acct}}
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -258,7 +258,7 @@
 # AUTHENTICATE TO THE POWERPROTECT REST API & GRAB ACCESS TOKEN
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Authenticate to PowerProtect DM Rest API"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/login
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/login
       method: POST
       validate_certs: no
       return_content: yes
@@ -276,7 +276,7 @@
 # ACCEPT THE POWERPROTECT EULA
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Accept the PowerProtect EULA"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/eulas/PPDM
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/eulas/PPDM
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -294,7 +294,7 @@
 # GET THE INITIAL CONFIGURATION ID
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Get the initial PowerProtect configuration"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/configurations
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/configurations
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -311,7 +311,7 @@
 # START THE INITIAL CONFIGURATION
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Start the initial PowerProtect configuration - {{config.json.content[0].id}}"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/configurations/{{config.json.content[0].id}}
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/configurations/{{config.json.content[0].id}}
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -393,7 +393,7 @@
 # GET THE CONFIG STATUS
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Check the PowerProtect config status to see if it is complete"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/configurations/{{config.json.content[0].id}}/config-status
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/configurations/{{config.json.content[0].id}}/config-status
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -409,7 +409,7 @@
 # GET THE DD CERTIFICATE
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Get the Data Domain certificate"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/certificates?host={{ddve_host}}.{{ad_domain}}&port=3009&type=Host
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/certificates?host={{ddve_host}}.{{ad_domain}}&port=3009&type=Host
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -431,7 +431,7 @@
 # ACCEPT THE DD CERTIFICATE
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Accept the Data Domain certificate"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/certificates/{{dd_cert.json[0].id}}
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/certificates/{{dd_cert.json[0].id}}
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -465,7 +465,7 @@
 # CREATE DATA DOMAIN CREDENTIALS
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Create Data Domain credentials"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/credentials
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/credentials
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -493,7 +493,7 @@
 # ADD THE DATA DOMAIN STORAGE SYSTEM
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Add Data Domain storage system"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/inventory-sources
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/inventory-sources
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -521,7 +521,7 @@
 # GET THE VCENTER CERTIFICATE
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Get the vCenter Certificate"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/certificates?host={{vcenter_host}}&port=443&type=Host
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/certificates?host={{vcenter_host}}&port=443&type=Host
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -543,7 +543,7 @@
 # ACCEPT THE VCENTER CERTIFICATE
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Accept the vCenter certificate"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/certificates/{{vc_cert.json[0].id}}
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/certificates/{{vc_cert.json[0].id}}
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -577,7 +577,7 @@
 # CREATE VCENTER CREDENTIALS
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Create vCenter credentials"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/credentials
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/credentials
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -605,7 +605,7 @@
 # ADD THE VCENTER SERVER
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Add the vCenter server"
     uri:
-      url: https://{{ppdm_host}}:8443/api/v2/inventory-sources
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/inventory-sources
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
