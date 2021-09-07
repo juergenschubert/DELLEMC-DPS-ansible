@@ -1,0 +1,19 @@
+vcenter_acct: administrator@vsphere.local
+vcenter_pwd: Password123!
+vcenter_host: vc.vlab.local
+vcenter_dc: Datacenter
+vcenter_cl: Cluster
+vcenter_ds: nfs-datastore
+ddve_host: ddve-1
+ddve_fqdn: ddve-1.vlab.local
+ddve_acct: sysadmin
+ddve_old_pwd: changeme
+ddve_ip: 192.168.1.90
+common_pwd: Password123!
+ddve_ova_binary: /mnt/c/wsl/automation/ova/ddve-7.6.0.7-685767/ddve-7.6.0.7-685767.ova
+vcenter_folder: vm/Deploy/
+ppdm_ova_binary: /mnt/c/wsl/automation/ova//home/dell/software/dellemc-ppdm-sw-19.8.0-5.ova
+ppdm_host: ppdm-1
+ppdm_fqdn: ppdm-1.vlab.local
+ppdm_old_pwd:
+ppdm_ip: 192.168.1.110
