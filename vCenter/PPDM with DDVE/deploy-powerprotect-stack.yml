@@ -1,42 +1,37 @@
 ---
-- name: "PowerProtect Data Manager with DDVE stack deployment"
+- name: "PowerProtect Data Manager stack deployment demo"
   hosts: localhost
   become: no
   gather_facts: false
+ 
+  vars:
+  vars_files:
+    - stack_vars.yml
 
   tasks:
-  - name: Include the variable file variables.yml
-    include_vars: variables.yml 
-    - name: Check that the DDVE OVA exists
+# DEPLOY THE POWER PROTECT OVA TO VCENTER
+  - name: Start time for the deployment
+    debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
+
+  - name: Check that the DDVE OVA exists
     stat:
-      path: "{{ ddve_ova_binary }}"
+      path: "{{ ddve_ova }}"
       get_checksum: no
       get_md5: no
-    register: stat_result
+    register: stat_resultdd
 #  - name: debug ova exist
 #    debug:
-#      msg: return value {{ stat_result }}
-  - debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
-  - name: Fail early when DDVE OVA is missing
-    assert:
-      that: "stat_result.stat.exists == True" 
-      msg: "You must provide the OVA at {{ ddve_ova_binary }}"
-    - name: Check that the PPDM OVA exists
+#      msg: return value {{ stat_resultdd }}
+  - name: Check that the PPDM OVA exists
     stat:
-      path: "{{ ppdm_ova_binary }}"
+      path: "{{ ppdm_ova }}"
       get_checksum: no
       get_md5: no
     register: stat_resultppdm
 #  - name: debug ova exist
 #    debug:
 #      msg: return value {{ stat_resultppdm }}
-  - debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
-  - name: Fail early when PPDM OVA is missing
-    assert:
-      that: "stat_resultppdm.stat.exists == True" 
-      msg: "You must provide the ppdm OVA at {{ ppdm_ova_binary }}"
-# DEPLOY THE POWER PROTECT OVA TO VCENTER
-  - name: Deploy PowerProtect Data Manager in your vCenter
+  - name: Deploy PowerProtect Data Manager
     vmware_deploy_ovf:
       hostname: "{{vcenter_host}}"
       username: "{{vcenter_acct}}"
@@ -45,27 +40,27 @@
       name: "{{ppdm_host}}"
       datacenter: "{{vcenter_dc}}"
       datastore: "{{vcenter_ds}}"
-      folder: /{{vcenter_dc}}/{{vcenter_folder}}
+      folder: "{{vcenter_folder}}"
       disk_provisioning: thin
       networks: 
-        "VM Network": VM Network
-      ova: "{{ppdm_ova_binary}}"
+        "VM Network": "{{vcenter_network}}"
+      ova: "{{ppdm_ova}}"
       allow_duplicates: no
       fail_on_spec_warnings: no
       wait: no
       wait_for_ip_address: no
       inject_ovf_env: yes
       properties:
-        vami.fqdn.brs: "{{ppdm_fqdn}}"
-        vami.ip0.brs: 192.168.1.51
-        vami.netmask0.brs: 255.255.255.0
-        vami.gateway.brs: 192.168.1.1
-        vami.DNS.brs: 192.168.1.1
+        vami.fqdn.brs: "{{ppdm_host}}.{{ad_domain}}"
+        vami.ip0.brs: "{{ppdm_ip}}"
+        vami.netmask0.brs: "{{ppdm_netmask}}"
+        vami.gateway.brs: "{{ppdm_gateway}}"
+        vami.DNS.brs: "{{ppdm_dns}}"
       power_on: yes
     delegate_to: localhost
 
 # DEPLOY THE DDVE OVA TO VCENTER
-  - name: Deploy PowerProtect Data Domain in your vCenter
+  - name: Deploy PowerProtect Data Domain
     vmware_deploy_ovf:
       hostname: "{{vcenter_host}}"
       username: "{{vcenter_acct}}"
@@ -73,30 +68,30 @@
       validate_certs: no
       name: "{{ddve_host}}"
       datacenter: "{{vcenter_dc}}"
-      folder: /{{vcenter_dc}}/{{vcenter_folder}}
+      folder: "{{vcenter_folder}}"
       datastore: "{{vcenter_ds}}"
       disk_provisioning: thin
       networks: 
-        "VM Network 1": VM Network
-        "VM Network 2": VM Network
-      ova: "{{ddve_ova_binary}}"
+        "VM Network 1": "{{vcenter_network}}"
+        "VM Network 2": "{{vcenter_network}}"
+      ova: "{{ddve_ova}}"
       allow_duplicates: no
       fail_on_spec_warnings: no
       wait: no
       wait_for_ip_address: no
       inject_ovf_env: yes
       properties:
-        hostname: "{{ddve_fqdn}}"
-        ipAddress: 192.168.1.90
-        netmask: 255.255.255.0
-        gateway: 192.168.1.250
-        dnsServer1: 192.168.1.1
-        dnsServer2: 192.168.1.1
+        hostname: "{{ddve_host}}.{{ad_domain}}"
+        ipAddress: "{{ddve_ip}}"
+        netmask: "{{ddve_netmask}}"
+        gateway: "{{ddve_gateway}}"
+        dnsServer1: "{{ddve_dns1}}"
+        dnsServer2: "{{ddve_dns2}}"
       power_on: yes
     delegate_to: localhost
  
  # ADD VDISK TO DDVE FOR ACTIVE TIER 
-  - name: "( {{ddve_fqdn}} ): Adding 500 GiB disk for active tier."
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Adding {{ddve_disk_size}} GiB disk for active tier."
     vmware_guest_disk:
       hostname: "{{vcenter_host}}"
       username: "{{vcenter_acct}}"
@@ -104,8 +99,8 @@
       datacenter: "{{vcenter_dc}}"
       name: "{{ddve_host}}"
       disk:
-        - size_gb: 500
-          type: thin
+        - size_gb: "{{ddve_disk_size}}"
+          type: "{{ddve_disk_type}}"
           state: present
           datastore: "{{vcenter_ds}}"
           disk_mode: "independent_persistent"
@@ -116,20 +111,20 @@
     register: disk_facts
 
 # WAIT FOR HTTPS RESPONSE FROM POWERPROTECT DATA DOMAIN  
-  - name: "( {{ddve_fqdn}} ): Waiting for HTTPS connectivity."
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Waiting for HTTPS connectivity."
     wait_for:
-      host: "{{ddve_fqdn}}"
+      host: "{{ddve_host}}.{{ad_domain}}"
       port: 443
       state: started
       delay: 1
       sleep: 60
-      timeout: 1200
+      timeout: 600
     register: waitforddve
 
 # AUTHENTICATE TO DDVE REST API
-  - name: "( {{ddve_fqdn}} ): Authenticate to PowerProtect DD REST API"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Authenticate to PowerProtect DD REST API"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/auth
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/auth
       method: POST
       force_basic_auth: no
       validate_certs: no
@@ -148,9 +143,9 @@
       var:  dd_token.x_dd_auth_token
 
 # ADD DEV3 DISK TO THE ACTIVE TIER
-  - name: "( {{ddve_fqdn}} ): Add dev3 to the active tier"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Add dev3 to the active tier"
     uri:
-      url: https://{{ddve_fqdn}}:3009/api/v1/dd-systems/0/file-systems/block-storages
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/api/v1/dd-systems/0/file-systems/block-storages
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -169,9 +164,9 @@
     register: disks
 
 # CREATE THE FILESYSTEM
-  - name: "( {{ddve_fqdn}} ): Create the filesystem"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Create the filesystem"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/file-systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/file-systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -184,15 +179,15 @@
           "operation": "create",
           "write_zeros": false
         }
-      timeout: 1200
+      timeout: 600
       return_content: yes
       status_code: 200
     register: create_filesys
 
 # ENABLE THE FILESYSTEM
-  - name: "( {{ddve_fqdn}} ): Enable the filesystem"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Enable the filesystem"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/file-systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/file-systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -210,9 +205,9 @@
     register: enable_filesys
 
 # ENABLE THE DDBOOST PROTOCOL
-  - name: "( {{ddve_fqdn}} ): Enable the boost protocol"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Enable the boost protocol"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/protocols/ddboost
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/protocols/ddboost
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -229,9 +224,9 @@
     register: boost
 
 # SET THE SYSTEM PASSPHRASE
-  - name: "( {{ddve_fqdn}} ): Set the system passphrase"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Set the system passphrase"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v3.0/dd-systems/0/systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v3.0/dd-systems/0/systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -251,9 +246,9 @@
     register: passphrase
 
 # UPDATE THE SYSADMIN PASSWORD
-  - name: "( {{ddve_fqdn}} ): Set the sysadmin password"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Set the sysadmin password"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/users/{{ddve_acct}}
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/users/{{ddve_acct}}
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -271,9 +266,9 @@
     register: password
 
 # WAIT FOR HTTPS RESPONSE FROM POWERPROTECT DATA MANAGER  
-  - name: "( {{ppdm_fqdn}} ): Wait for HTTPS connectivity"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Wait for HTTPS connectivity"
     wait_for:
-      host: "{{ppdm_fqdn}}"
+      host: "{{ppdm_host}}.{{ad_domain}}"
       port: 443
       state: started
       delay: 1
@@ -282,9 +277,9 @@
     register: waitforppdm
 
 # AUTHENTICATE TO THE POWERPROTECT REST API & GRAB ACCESS TOKEN
-  - name: "( {{ppdm_fqdn}} ): Authenticate to PowerProtect DM Rest API"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Authenticate to PowerProtect DM Rest API"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/login
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/login
       method: POST
       validate_certs: no
       return_content: yes
@@ -295,14 +290,14 @@
       status_code: 200
     register: token
     
-  - name: "( {{ppdm_fqdn}} ): Display bearer token"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display bearer token"
     debug:
       var: token.json.access_token
 
 # ACCEPT THE POWERPROTECT EULA
-  - name: "( {{ppdm_fqdn}} ): Accept the PowerProtect EULA"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Accept the PowerProtect EULA"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/eulas/PPDM
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/eulas/PPDM
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -318,9 +313,9 @@
     register: eula
   
 # GET THE INITIAL CONFIGURATION ID
-  - name: "( {{ppdm_fqdn}} ): Get the initial PowerProtect configuration"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Get the initial PowerProtect configuration"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/configurations
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/configurations
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -330,14 +325,14 @@
       body_format: json
     register: config
   
-  - name: "( {{ppdm_fqdn}} ): Display the initial PowerProtect configuration id"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the initial PowerProtect configuration id"
     debug:
       var: config.json.content[0].id
 
 # START THE INITIAL CONFIGURATION
-  - name: "( {{ppdm_fqdn}} ): Start the initial PowerProtect configuration - {{config.json.content[0].id}}"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Start the initial PowerProtect configuration - {{config.json.content[0].id}}"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/configurations/{{config.json.content[0].id}}
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/configurations/{{config.json.content[0].id}}
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -351,32 +346,32 @@
             "nodeId": "{{config.json.content[0].nodeId}}",
             "networks": [
                 {
-                    "fqdn": "{{ppdm_fqdn}}",
+                    "fqdn": "{{ppdm_host}}.{{ad_domain}}",
                     "ipAddress": [
                         "{{ppdm_ip}}"
                     ],
-                    "ipAddressFamily": "IPv4",
-                    "interfaceName": "eth0",
-                    "netMask": "255.255.255.0",
-                    "gateway": "192.168.1.1",
+                    "ipAddressFamily": "{{config.json.content[0].networks[0].ipAddressFamily}}",
+                    "interfaceName": "{{config.json.content[0].networks[0].interfaceName}}",
+                    "netMask": "{{ppdm_netmask}}",
+                    "gateway": "{{ppdm_gateway}}",
                     "dnsServers": [
-                        "192.168.1.1"
+                        "{{ppdm_dns}}"
                     ],
                     "nslookupSuccess": true
                 },
                 {
                     "ipAddress": [
-                        "{{config.json.content[0].networks.ipAddress}}"
+                        "{{config.json.content[0].networks[1].ipAddress[0]}}"
                     ],
-                    "ipAddressFamily": "IPv4",
-                    "interfaceName": "brpp0",
-                    "netMask": "255.255.255.0"
+                    "ipAddressFamily": "{{config.json.content[0].networks[1].ipAddressFamily}}",
+                    "interfaceName": "{{config.json.content[0].networks[1].interfaceName}}",
+                    "netMask": "{{config.json.content[0].networks[1].netMask}}"
                 }
             ],
             "ntpServers": [
-                "192.168.1.1"
+                "{{ppdm_ntp}}"
             ],
-            "timeZone": "US/Central - Central Standard Time",
+            "timeZone": "{{ppdm_timezone}}",
             "osUsers": [
                 {
                     "userName": "root",
@@ -402,7 +397,7 @@
             ],
             "lockbox": {
                 "name": "Lockbox",
-                "lastUpdatedTime": "2021-03-30T18:58:38.463+00:00",
+                "lastUpdatedTime": "{{config.json.content[0].lockbox.lastUpdatedTime}}",
                 "passphrase": "Ch@ngeme1",
                 "newPassphrase": "{{common_pwd}}"
             },
@@ -417,9 +412,9 @@
     register: start_config
   
 # GET THE CONFIG STATUS
-  - name: "( {{ppdm_fqdn}} ): Check the PowerProtect config status to see if it is complete"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Check the PowerProtect config status to see if it is complete"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/configurations/{{config.json.content[0].id}}/config-status
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/configurations/{{config.json.content[0].id}}/config-status
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -433,9 +428,9 @@
     delay: 10
 
 # GET THE DD CERTIFICATE
-  - name: "( {{ppdm_fqdn}} ): Get the Data Domain certificate"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Get the Data Domain certificate"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/certificates?host={{ddve_fqdn}}&port=3009&type=Host
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/certificates?host={{ddve_host}}.{{ad_domain}}&port=3009&type=Host
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -449,15 +444,15 @@
     retries: 90
     delay: 10
 
-  - name: "( {{ppdm_fqdn}} ): Display the Data Domain certificate"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the Data Domain certificate"
     debug:
       var: dd_cert.json[0]
 
 
 # ACCEPT THE DD CERTIFICATE
-  - name: "( {{ppdm_fqdn}} ): Accept the Data Domain certificate"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Accept the Data Domain certificate"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/certificates/{{dd_cert.json[0].id}}
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/certificates/{{dd_cert.json[0].id}}
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -484,14 +479,14 @@
     retries: 90
     delay: 10
 
-  - name: "( {{ppdm_fqdn}} ): Display the Data Domain Certificate"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the Data Domain Certificate"
     debug:
       var: accept_dd_cert.json
 
 # CREATE DATA DOMAIN CREDENTIALS
-  - name: "( {{ppdm_fqdn}} ): Create Data Domain credentials"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Create Data Domain credentials"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/credentials
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/credentials
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -512,14 +507,14 @@
     retries: 90
     delay: 10
 
-  - name: "( {{ppdm_fqdn}} ): Display the credentials response"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the credentials response"
     debug:
       var: dd_creds.json
 
 # ADD THE DATA DOMAIN STORAGE SYSTEM
-  - name: "( {{ppdm_fqdn}} ): Add Data Domain storage system"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Add Data Domain storage system"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/inventory-sources
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/inventory-sources
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -535,19 +530,19 @@
             "credentials": {
               "id": "{{dd_creds.json.id}}"
             },
-            "address": "{{ddve_fqdn}}"
+            "address": "{{ddve_host}}.{{ad_domain}}"
           }
       status_code: 201
     register: storage
   
-  - name: "( {{ppdm_fqdn}} ): Display the storage add response"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the storage add response"
     debug:
       var: storage.json
 
 # GET THE VCENTER CERTIFICATE
-  - name: "( {{ppdm_fqdn}} ): Get the vCenter Certificate"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Get the vCenter Certificate"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/certificates?host={{vcenter_host}}&port=443&type=Host
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/certificates?host={{vcenter_host}}&port=443&type=Host
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -561,15 +556,15 @@
     retries: 90
     delay: 10
 
-  - name: "( {{ppdm_fqdn}} ): Display the vCenter certificate"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the vCenter certificate"
     debug:
       var: vc_cert.json[0]
 
 
 # ACCEPT THE VCENTER CERTIFICATE
-  - name: "( {{ppdm_fqdn}} ): Accept the vCenter certificate"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Accept the vCenter certificate"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/certificates/{{vc_cert.json[0].id}}
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/certificates/{{vc_cert.json[0].id}}
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -596,14 +591,14 @@
     retries: 90
     delay: 10
 
-  - name: "( {{ppdm_fqdn}} ): Display the vCenter certificate"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the vCenter certificate"
     debug:
       var: accept_vc_cert.json
 
 # CREATE VCENTER CREDENTIALS
-  - name: "( {{ppdm_fqdn}} ): Create vCenter credentials"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Create vCenter credentials"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/credentials
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/credentials
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -624,14 +619,14 @@
     retries: 90
     delay: 10
 
-  - name: "( {{ppdm_fqdn}} ): Display the credentials response"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the credentials response"
     debug:
       var: vc_creds.json
 
 # ADD THE VCENTER SERVER
-  - name: "( {{ppdm_fqdn}} ): Add the vCenter server"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Add the vCenter server"
     uri:
-      url: https://{{ppdm_fqdn}}:8443/api/v2/inventory-sources
+      url: https://{{ppdm_host}}.{{ad_domain}}:8443/api/v2/inventory-sources
       headers:
         Authorization: "Bearer {{token.json.access_token}}"
         Content-Type: "application/json"
@@ -652,6 +647,8 @@
       status_code: 201
     register: vcenter
   
-  - name: "( {{ppdm_fqdn}} ): Display the vCenter add response"
+  - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the vCenter add response"
     debug:
       var: vcenter.json
+   - name: End time for the deployment
+    debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
