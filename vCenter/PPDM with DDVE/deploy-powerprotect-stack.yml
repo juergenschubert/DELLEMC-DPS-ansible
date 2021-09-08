@@ -9,10 +9,9 @@
     - stack_vars.yml
 
   tasks:
-# DEPLOY THE POWER PROTECT OVA TO VCENTER
   - name: Start time for the deployment
     debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
-
+# DEPLOY THE POWER PROTECT OVA STACK TO VCENTER
   - name: Check that the DDVE OVA exists
     stat:
       path: "{{ ddve_ova }}"
@@ -89,7 +88,8 @@
         dnsServer2: "{{ddve_dns2}}"
       power_on: yes
     delegate_to: localhost
- 
+  - name: End time of both ova deployments
+    debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
  # ADD VDISK TO DDVE FOR ACTIVE TIER 
   - name: "( {{ddve_host}}.{{ad_domain}} ): Adding {{ddve_disk_size}} GiB disk for active tier."
     vmware_guest_disk:
