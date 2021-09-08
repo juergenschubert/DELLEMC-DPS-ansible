@@ -424,8 +424,8 @@
       body_format: json
     register: monitor
     until: monitor.status == 200 and monitor.json.percentageCompleted == 100
-    retries: 180
-    delay: 10
+    retries: 60
+    delay: 30
 
 # GET THE DD CERTIFICATE
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Get the Data Domain certificate"

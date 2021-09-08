@@ -17,7 +17,8 @@ ppdm_gateway: 192.168.1.1
 ppdm_dns: 192.168.1.1
 ppdm_ntp: 192.168.1.1
 ppdm_timezone: "Europe/Berlin - Central European Time"
-ppdm_ova: /mnt/c/wsl/automation/ova/dellemc-ppdm-sw-19.8.0-5.ova
+#ppdm_ova: /mnt/c/wsl/automation/ova/dellemc-ppdm-sw-19.8.0-5.ova
+ppdm_ova: /mnt/c/wsl/automation/ova/dellemc-ppdm-sw-19.9.0-10.ova
 
 #POWERPROTECT DD VARIABLES
 ddve_host: ddve-1
