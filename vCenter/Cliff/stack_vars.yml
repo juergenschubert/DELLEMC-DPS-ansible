@@ -8,15 +8,15 @@ vcenter_folder: "/{{vcenter_dc}}/vm/Deploy/"
 vcenter_network: VM Network
 
 #POWERPROTECT DATAMANAGER VARIABLES
-ppdm_host: ppdm1
+ppdm_host: ppdm
 ppdm_acct: admin
 ppdm_old_pwd: admin
-ppdm_ip: 192.168.1.51
+ppdm_ip: 192.168.1.50
 ppdm_netmask: 255.255.255.0
 ppdm_gateway: 192.168.1.1
 ppdm_dns: 192.168.1.1
 ppdm_ntp: 192.168.1.1
-ppdm_timezone: "US/Central - Central Standard Time"
+ppdm_timezone: "Europe/Berlin - Central European Time"
 ppdm_ova: /mnt/c/wsl/automation/ova/dellemc-ppdm-sw-19.8.0-5.ova
 
 #POWERPROTECT DD VARIABLES
