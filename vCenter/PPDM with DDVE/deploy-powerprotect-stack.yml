@@ -650,5 +650,6 @@
   - name: "( {{ppdm_host}}.{{ad_domain}} ): Display the vCenter add response"
     debug:
       var: vcenter.json
-   - name: End time for the deployment
-    debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
+  - name: End time for the deployment
+    debug: 
+      msg="{{ lookup('pipe','date +%H:%M:%S') }}"
