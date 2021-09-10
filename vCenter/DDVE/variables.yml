@@ -1,13 +1,25 @@
+#VCENTER VARIABLES
 vcenter_acct: administrator@vsphere.local
 vcenter_pwd: Password123!
 vcenter_host: vc.vlab.local
 vcenter_dc: Datacenter
-vcenter_cl: Cluster
 vcenter_ds: nfs-datastore
+vcenter_folder: "/{{vcenter_dc}}/vm/Deploy/"
+vcenter_network: VM Network
+
+#POWERPROTECT DD VARIABLES
 ddve_host: ddve-1
-ddve_fqdn: ddve-1.vlab.local
 ddve_acct: sysadmin
 ddve_old_pwd: changeme
 ddve_ip: 192.168.1.90
+ddve_netmask: 255.255.255.0
+ddve_gateway: 192.168.1.1
+ddve_dns1: 192.168.1.1
+ddve_dns2: 192.168.1.1
+ddve_ova: /mnt/c/wsl/automation/ova/ddve-7.6.0.7-685767/ddve-7.6.0.7-685767.ova
+ddve_disk_size: 500
+ddve_disk_type: thin
+
+#MISC VARS
 common_pwd: Password123!
-ddve_ova_binary: /mnt/c/wsl/automation/ova/ddve-7.6.0.7-685767/ddve-7.6.0.7-685767.ova
+ad_domain: vlab.local

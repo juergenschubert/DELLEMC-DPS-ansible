@@ -3,12 +3,17 @@
   hosts: localhost
   become: no
   gather_facts: false
+
+  vars:
+  vars_files:
+    - variables.yml
+
   tasks:
-  - name: Include the variable file variables.yml
-    include_vars: variables.yml
-  - name: Check that the OVA exists
+  - name: Start time for the deployment
+    debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
+  - name: Check that the DDVE OVA exists
     stat:
-      path: "{{ ddve_ova_binary }}"
+      path: "{{ ddve_ova }}"
       get_checksum: no
       get_md5: no
     register: stat_result
@@ -19,7 +24,8 @@
   - name: Fail early when OVA is missing
     assert:
       that: "stat_result.stat.exists == True" 
-      msg: "You must provide the OVA at {{ ddve_ova_binary }}"
+      msg: "You must provide the OVA at {{ ddve_ova }}"
+# DEPLOY THE DDVE OVA TO VCENTER
   - name: Deploy PowerProtect Data Domain
     vmware_deploy_ovf:
       hostname: "{{vcenter_host}}"
@@ -28,29 +34,31 @@
       validate_certs: no
       name: "{{ddve_host}}"
       datacenter: "{{vcenter_dc}}"
-      folder: /{{vcenter_dc}}/vm/Deploy
+      folder: "{{vcenter_folder}}"
       datastore: "{{vcenter_ds}}"
       disk_provisioning: thin
       networks: 
-        "VM Network 1": VM Network
-        "VM Network 2": VM Network
-      ova: "{{ddve_ova_binary}}"
+        "VM Network 1": "{{vcenter_network}}"
+        "VM Network 2": "{{vcenter_network}}"
+      ova: "{{ddve_ova}}"
       allow_duplicates: no
       fail_on_spec_warnings: no
       wait: no
       wait_for_ip_address: no
       inject_ovf_env: yes
       properties:
-        hostname: "{{ddve_host}}.vlab.local"
-        ipAddress: 192.168.1.90
-        netmask: 255.255.255.0
-        gateway: 192.168.1.1
-        dnsServer1: 192.168.1.1
-        dnsServer2: 192.168.1.12
+        hostname: "{{ddve_host}}.{{ad_domain}}"
+        ipAddress: "{{ddve_ip}}"
+        netmask: "{{ddve_netmask}}"
+        gateway: "{{ddve_gateway}}"
+        dnsServer1: "{{ddve_dns1}}"
+        dnsServer2: "{{ddve_dns2}}"
       power_on: yes
     delegate_to: localhost
+  - name: End time of both ova deployments
+    debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
  # ADD VDISK TO DDVE FOR ACTIVE TIER 
-  - name: "( {{ddve_host}}.vlab.local ): Adding 500 GiB disk for active tier."
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Adding {{ddve_disk_size}} GiB disk for active tier."
     vmware_guest_disk:
       hostname: "{{vcenter_host}}"
       username: "{{vcenter_acct}}"
@@ -58,8 +66,8 @@
       datacenter: "{{vcenter_dc}}"
       name: "{{ddve_host}}"
       disk:
-        - size_gb: 500
-          type: thin
+        - size_gb: "{{ddve_disk_size}}"
+          type: "{{ddve_disk_type}}"
           state: present
           datastore: "{{vcenter_ds}}"
           disk_mode: "independent_persistent"
@@ -68,21 +76,22 @@
       validate_certs: no
     delegate_to: localhost
     register: disk_facts
+
 # WAIT FOR HTTPS RESPONSE FROM POWERPROTECT DATA DOMAIN  
-  - name: "( {{ddve_host}}.vlab.local ): Waiting for HTTPS connectivity."
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Waiting for HTTPS connectivity."
     wait_for:
-      host: "{{ddve_host}}.vlab.local"
+      host: "{{ddve_host}}.{{ad_domain}}"
       port: 443
       state: started
       delay: 1
       sleep: 60
-      timeout: 1200
+      timeout: 600
     register: waitforddve
 
 # AUTHENTICATE TO DDVE REST API
-  - name: "( {{ddve_host}}.vlab.local ): Authenticate to PowerProtect DD REST API"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Authenticate to PowerProtect DD REST API"
     uri:
-      url: https://{{ddve_host}}.vlab.local:3009/rest/v1.0/auth
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/auth
       method: POST
       force_basic_auth: no
       validate_certs: no
@@ -101,9 +110,9 @@
       var:  dd_token.x_dd_auth_token
 
 # ADD DEV3 DISK TO THE ACTIVE TIER
-  - name: "( {{ddve_fqdn}} ): Add dev3 to the active tier"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Add dev3 to the active tier"
     uri:
-      url: https://{{ddve_fqdn}}:3009/api/v1/dd-systems/0/file-systems/block-storages
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/api/v1/dd-systems/0/file-systems/block-storages
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -122,9 +131,9 @@
     register: disks
 
 # CREATE THE FILESYSTEM
-  - name: "( {{ddve_fqdn}} ): Create the filesystem"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Create the filesystem"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/file-systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/file-systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -143,9 +152,9 @@
     register: create_filesys
 
 # ENABLE THE FILESYSTEM
-  - name: "( {{ddve_fqdn}} ): Enable the filesystem"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Enable the filesystem"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/file-systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/file-systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -163,9 +172,9 @@
     register: enable_filesys
 
 # ENABLE THE DDBOOST PROTOCOL
-  - name: "( {{ddve_fqdn}}): Enable the boost protocol"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Enable the boost protocol"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/protocols/ddboost
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/protocols/ddboost
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -182,9 +191,9 @@
     register: boost
 
 # SET THE SYSTEM PASSPHRASE
-  - name: "( {{ddve_fqdn}} ): Set the system passphrase"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Set the system passphrase"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v3.0/dd-systems/0/systems
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v3.0/dd-systems/0/systems
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -204,9 +213,9 @@
     register: passphrase
 
 # UPDATE THE SYSADMIN PASSWORD
-  - name: "( {{ddve_fqdn}} ): Set the sysadmin password"
+  - name: "( {{ddve_host}}.{{ad_domain}} ): Set the sysadmin password"
     uri:
-      url: https://{{ddve_fqdn}}:3009/rest/v1.0/dd-systems/0/users/{{ddve_acct}}
+      url: https://{{ddve_host}}.{{ad_domain}}:3009/rest/v1.0/dd-systems/0/users/{{ddve_acct}}
       method: PUT
       headers:
         X-DD-AUTH-TOKEN: "{{dd_token.x_dd_auth_token}}"
@@ -221,8 +230,10 @@
         }
       return_content: yes
       status_code: 200
-    register: password
-  - debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
+    register: password  
+  - name: End time for the deployment
+    debug: 
+      msg="{{ lookup('pipe','date +%H:%M:%S') }}"
 
 
 
