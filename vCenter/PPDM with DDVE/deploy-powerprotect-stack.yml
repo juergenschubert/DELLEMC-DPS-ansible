@@ -57,7 +57,10 @@
         vami.DNS.brs: "{{ppdm_dns}}"
       power_on: yes
     delegate_to: localhost
-
+  - name: End time for the PPDM deployment
+    debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
+  - name: Start time for the DDVE ova deployment
+    debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
 # DEPLOY THE DDVE OVA TO VCENTER
   - name: Deploy PowerProtect Data Domain
     vmware_deploy_ovf:
@@ -88,7 +91,7 @@
         dnsServer2: "{{ddve_dns2}}"
       power_on: yes
     delegate_to: localhost
-  - name: End time of both ova deployments
+  - name: End time of DDVE ova deployments
     debug: msg="{{ lookup('pipe','date +%H:%M:%S') }}"
  # ADD VDISK TO DDVE FOR ACTIVE TIER 
   - name: "( {{ddve_host}}.{{ad_domain}} ): Adding {{ddve_disk_size}} GiB disk for active tier."
